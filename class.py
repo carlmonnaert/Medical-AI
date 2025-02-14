@@ -82,7 +82,7 @@ class Hopital:
             - les personnes qui ne sont plus vivantes ou guéries sont retirées de la file d'attente et du traitement
             - les personnes en attente qui sont malades et pour qui il reste des lits sont mises en traitement
         """
-        for personne in self.traitement:
+        for personne in self.en_traitement:
             if not personne.vivant() or not personne.malade():
                 self.en_traitement.remove(personne)
 
@@ -114,7 +114,7 @@ class World:
         for personne in self.population:
             personne.jour_suivant()
             
-            if not personne.vivant():
+            if not personne.vivant:
                 self.population.remove(personne)
             
             elif personne.malade() and not personne.en_traitement and not personne.en_attente:
@@ -130,7 +130,7 @@ def create_world(population_n = N_population, hopitaux = N_hopitaux):
     Crée un monde avec une population de population_n personnes et hopitaux hopitaux avec 5 medecins chacun
     """
     hopitaux = [Hopital(50,[Medecin() for k in range(5)]) for i in range(hopitaux)]
-    maladies = [Maladie(0.01,0.2,0.1,1.5)]
+    maladies = [Maladie(0.1,0.2,0.1,1.5)]
     population = [ Personne(0) for k in range(population_n)]
     return World(hopitaux, population, maladies)
 

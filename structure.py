@@ -2,6 +2,7 @@ import random as rd
 
 N_hopitaux = 10
 N_population = 1000
+N_malades = 10
 
 class Medecin:
     def __init__(self):
@@ -21,6 +22,7 @@ class Maladie:
         self.taux_mortalite = taux_mortalite
         self.taux_contagion = taux_contagion
         self.taux_rémission = taux_rémission
+        self.multiplicateur_hopital = multiplicateur_hopital
 
 class Personne:
     """
@@ -83,11 +85,11 @@ class Hopital:
             - les personnes en attente qui sont malades et pour qui il reste des lits sont mises en traitement
         """
         for personne in self.en_traitement:
-            if not personne.vivant() or not personne.malade():
+            if not personne.vivant or not personne.malade():
                 self.en_traitement.remove(personne)
 
         for personne in self.file_attente:
-            if not personne.vivant() or not personne.malade():
+            if not personne.vivant or not personne.malade():
                 self.file_attente.remove(personne)
             elif personne.malade() and self.lits_dispos > 0:
                 self.en_traitement.append(personne)
@@ -105,9 +107,23 @@ class World:
         self.hopitaux = hopitaux
         self.population = population
         self.maladies = maladies
+        self.nb_population_initiale = len(population)
         self.jour = 0
 
-    def next_day(self):
+    def nb_population(self):
+        return len(self.population)
+
+    def nb_malades(self):
+        compte = 0
+        for personne in self.population:
+            if personne.malade() and personne.vivant:
+                compte += 1
+        return compte
+
+    def nb_morts(self):
+        return self.nb_population_initiale - self.nb_population()
+
+    def jour_suivant(self):
         nb_hopitaux = len(self.hopitaux)
         self.jour += 1
 
@@ -119,21 +135,24 @@ class World:
             
             elif personne.malade() and not personne.en_traitement and not personne.en_attente:
                 self.hopitaux[rd.randint(0,nb_hopitaux-1)].file_attente.append(personne)
+        
+        for personne in self.population:            
+            if not personne.malade() and self.maladies[0].taux_contagion * self.nb_malades() / self.nb_population() > rd.random():
+                personne.maladie = self.maladies[0]
 
         for hopital in self.hopitaux:
             hopital.jour_suivant()
-        print("Jour",self.jour,"\n","Population:",len(self.population))
+        print("Jour",self.jour,"|","Population:",len(self.population),"|","Malades:",self.nb_malades())
 
 
-def create_world(population_n = N_population, hopitaux = N_hopitaux):
+def create_world(population_n = N_population, hopitaux = N_hopitaux,malades_initiaux = N_malades):
     """
     Crée un monde avec une population de population_n personnes et hopitaux hopitaux avec 5 medecins chacun
     """
+    maladie_de_base = Maladie(0,0.1,1/10,1)
     hopitaux = [Hopital(50,[Medecin() for k in range(5)]) for i in range(hopitaux)]
-    maladies = [Maladie(0.1,0.2,0.1,1.5)]
+    maladies = [maladie_de_base]
     population = [ Personne(0) for k in range(population_n)]
+    for i in range(malades_initiaux):
+        population[i].maladie = maladie_de_base
     return World(hopitaux, population, maladies)
-
-world = create_world()
-for k in range(100):
-    world.next_day()

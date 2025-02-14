@@ -34,7 +34,6 @@ class Personne:
         self.en_attente = False
         self.en_traitement = False
         self.vivant = True
-        self.hoptital = rd.randint(0,N_hopitaux-1)
 
     def malade(self):
         return self.maladie is not None
@@ -109,20 +108,32 @@ class World:
         self.jour = 0
 
     def next_day(self):
-        
+        nb_hopitaux = len(self.hopitaux)
+        self.jour += 1
+
         for personne in self.population:
             personne.jour_suivant()
+            
             if not personne.vivant():
                 self.population.remove(personne)
+            
+            elif personne.malade() and not personne.en_traitement and not personne.en_attente:
+                self.hopitaux[rd.randint(0,nb_hopitaux-1)].file_attente.append(personne)
 
         for hopital in self.hopitaux:
             hopital.jour_suivant()
+        print("Jour",self.jour,"\n","Population:",len(self.population))
+
 
 def create_world(population_n = N_population, hopitaux = N_hopitaux):
     """
     Crée un monde avec une population de population_n personnes et hopitaux hopitaux avec 5 medecins chacun
     """
     hopitaux = [Hopital(50,[Medecin() for k in range(5)]) for i in range(hopitaux)]
-    maladies = [Maladie(0.01,0.5,14)]
+    maladies = [Maladie(0.01,0.2,0.1,1.5)]
     population = [ Personne(0) for k in range(population_n)]
     return World(hopitaux, population, maladies)
+
+world = create_world()
+for k in range(100):
+    world.next_day()

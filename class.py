@@ -3,7 +3,6 @@ import random as rd
 N_hopitaux = 10
 N_population = 1000
 
-
 class Medecin:
     def __init__(self):
         self.en_charge = None
@@ -18,7 +17,7 @@ class Maladie:
                                        - taux de rémission (% de chance qu'une personne guérisse d'elle même chaque jour)
                                        - un multiplicateur qui augmente le taux de rémission/diminue la mortalité quand le patient est à l'hopital
     """
-    def __init__(sefl,taux_mortalite, taux_contagion, taux_rémission,multiplicateur_hopital):
+    def __init__(self,taux_mortalite, taux_contagion, taux_rémission,multiplicateur_hopital):
         self.taux_mortalite = taux_mortalite
         self.taux_contagion = taux_contagion
         self.taux_rémission = taux_rémission
@@ -32,10 +31,10 @@ class Personne:
     def __init__(self, arrival_time=0, malade = False,maladie = None):
         self.arrival_time = arrival_time
         self.maladie = maladie
-        self.waiting = False
+        self.en_attente = False
         self.en_traitement = False
         self.vivant = True
-        self.hoptital = 
+        self.hoptital = rd.randint(0,N_hopitaux-1)
 
     def malade(self):
         return self.maladie is not None
@@ -62,6 +61,7 @@ class Personne:
             
             elif self.maladie.taux_rémission > rd.random():
                 self.guerir()
+                
             
 
 class Hopital:
@@ -79,21 +79,21 @@ class Hopital:
 
     def jour_suivant(self):
         """
-        Met à jour l'état de l'hopital en supposant que la population a déjà été mise à jour
+        Met à jour l'état de l'hopital en supposant que la population a déjà été mise à jour:
+            - les personnes qui ne sont plus vivantes ou guéries sont retirées de la file d'attente et du traitement
+            - les personnes en attente qui sont malades et pour qui il reste des lits sont mises en traitement
         """
-        en_traitement_1 = []
-        file_attente_1 = []
-
         for personne in self.traitement:
-            if personne.malade() and personne.vivant():
-                en_traitement_1.append(personne)
-        
+            if not personne.vivant() or not personne.malade():
+                self.en_traitement.remove(personne)
+
         for personne in self.file_attente:
-            if personne.malade() and personne.vivant():
-                file_attente_1.append(personne)
-        
-        self.en_traitement = en_traitement_1
-        self.file_attente = file_attente_1
+            if not personne.vivant() or not personne.malade():
+                self.file_attente.remove(personne)
+            elif personne.malade() and self.lits_dispos > 0:
+                self.en_traitement.append(personne)
+                self.file_attente.remove(personne)
+                self.lits_dispos -= 1
 
 class World:
     """
@@ -112,8 +112,10 @@ class World:
         
         for personne in self.population:
             personne.jour_suivant()
-        
-        for hoptital in self.hopitaux:
+            if not personne.vivant():
+                self.population.remove(personne)
+
+        for hopital in self.hopitaux:
             hopital.jour_suivant()
 
 def create_world(population_n = N_population, hopitaux = N_hopitaux):

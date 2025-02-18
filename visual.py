@@ -22,7 +22,7 @@ line_morts, = ax.plot([], [], 'k-', label="Morts")
 
 ax.legend()
 
-def update(frame):
+def update_visual(frame):
     """
     Met à jour les données et redessine le graphe
     """
@@ -64,7 +64,7 @@ frame.pack()
 btn_stop = ttk.Button(frame, text="Arrêter", command=stop_simulation)
 btn_stop.pack()
 
-ani = animation.FuncAnimation(fig, update, interval=500)
+ani = animation.FuncAnimation(fig, update_visual, interval=500)
 
 plt.show()
 root.mainloop()

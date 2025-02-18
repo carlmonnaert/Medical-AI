@@ -2,7 +2,7 @@
 
 
 Découverte du sujet et mise een place d'un plan d'action pour la réalisation du projet. Nous nous sommes mis d'accord sur language que nous allions utilisé (Python) et les bibliothèques utiles. 
-**(Tout le monde) **ont commencé la premiere simulation assez rapide du probléme tant dis que nous autres avons commencé à faire des recherches bibliographiques pour comprendre comment avoir une simulation qui s'approche de la réalité.
+**(Tout le monde)** ont commencé la premiere simulation assez rapide du probléme tant dis que nous autres avons commencé à faire des recherches bibliographiques pour comprendre comment avoir une simulation qui s'approche de la réalité.
 
 
 **18/02:**

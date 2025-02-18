@@ -1,0 +1,7 @@
+Fait:
+    - Evolution de la situation en fonction du temps avec une seule maladie
+    - Affichage en temps réel de la quantité de malades/morts/population
+
+A faire:
+    - Gestion de multiples maladies -> choisir si un patient peut avoir plusieurs maladies, ce que ça entraine quand il tombe malade, comment choisir quelle maladie il attrape
+    

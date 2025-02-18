@@ -149,7 +149,7 @@ def create_world(population_n = N_population, hopitaux = N_hopitaux,malades_init
     """
     Crée un monde avec une population de population_n personnes et hopitaux hopitaux avec 5 medecins chacun
     """
-    maladie_de_base = Maladie(0,0.1,1/10,1)
+    maladie_de_base = Maladie(0.003,0.5,0.2,1)
     hopitaux = [Hopital(50,[Medecin() for k in range(5)]) for i in range(hopitaux)]
     maladies = [maladie_de_base]
     population = [ Personne(0) for k in range(population_n)]

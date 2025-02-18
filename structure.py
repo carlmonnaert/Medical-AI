@@ -87,6 +87,7 @@ class Hopital:
         for personne in self.en_traitement:
             if not personne.vivant or not personne.malade():
                 self.en_traitement.remove(personne)
+                self.lits_dispos += 1
 
         for personne in self.file_attente:
             if not personne.vivant or not personne.malade():

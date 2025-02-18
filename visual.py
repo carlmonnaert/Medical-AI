@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import ttk
 
 world = s.create_world()
-
 jours = []
 populations = []
 malades = []
@@ -64,7 +63,7 @@ frame.pack()
 btn_stop = ttk.Button(frame, text="Arrêter", command=stop_simulation)
 btn_stop.pack()
 
-ani = animation.FuncAnimation(fig, update_visual, interval=500)
+ani = animation.FuncAnimation(fig, update_visual, interval=1)
 
 plt.show()
 root.mainloop()

@@ -1,11 +1,10 @@
 import structure as s
-import structure_bis as sb
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import tkinter as tk
 from tkinter import ttk
 
-world = sb.create_world()
+world = s.create_world()
 jours = []
 populations = []
 malades = []

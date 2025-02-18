@@ -1,7 +1,8 @@
 import structure as s
+import structure_bis as sb
 import time
 
-world = s.create_world()
+world = sb.create_world()
 
 def updtate():
     world.jour_suivant()

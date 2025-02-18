@@ -7,7 +7,7 @@ Découverte du sujet et mise een place d'un plan d'action pour la réalisation d
 
 **18/02:**
 
-- **(Carl)** La première modélisation de Carl a bien fonctionné, nous avons modélisé une seule maladie avec un certain taux de contagion, de mortalité et de "récupération". Cependant, elle rencontre deux problémes majeures qu'il faudra corriger : une complexité qui devient trop importante au fil des jours et une mauvaise gestion des modéles mathématiques (ce qui est normal à ce stade).
+- **(Carl)** La première modélisation a bien fonctionné, nous avons modélisé une seule maladie avec un certain taux de contagion, de mortalité et de "récupération". Cependant, elle rencontre deux problémes majeures qu'il faudra corriger : une complexité qui devient trop importante au fil des jours et une mauvaise gestion des modéles mathématiques (ce qui est normal à ce stade).
 - **(Maxence, Lukas)** C'est justement mon rôle avec Lukas, de trouver et comprendre les mathématiques derriere la gestion des patients au sein d'un hopital. Nous avons découvert et allons nous inspirer du modele utilisé dans les centres d'appel ie la loi d'Erlang, nous sommes dans la phase de compréhension de ce modéle et de détermination des hypothèses que nous allons faire.
 -  De son côté, **(Arsène)** a trouvé des bases de données open source très intéressantes dans lequel on peut trouver le temps moyen que chaque patient attend dans l'hopital, le nombre de lit, le nombre de patient qui reste plus de 3 mois. Et toutes ces informations sur les 15 dernières années. 
 

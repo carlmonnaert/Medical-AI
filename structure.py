@@ -1,7 +1,7 @@
 import random as rd
 
 N_HOPITAUX = 10
-N_POPULATION = 100000
+N_POPULATION = 1000000
 N_MALADES = 100
 
 class Medecin:

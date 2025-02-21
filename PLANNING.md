@@ -30,7 +30,8 @@
     Documentation et rédaction du rapport: 06/06/2025, 2w
     Préparation et finalisation de la présentation: 06/06/2025, 2w
 
-    section Livrables
+    section Livrables-Echéances
+    Validation du planning: milestone, 21/02/2025, 1d
     Validation des choix techniques: milestone, 07/03/2025, 1d
     Validation de la conception: milestone, 28/03/2025, 1d
     Vérification de l'avancement: milestone, 25/04/2025, 1d

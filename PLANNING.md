@@ -1,3 +1,5 @@
+# PLANNING - IA MEDICAL
+
 ```mermaid    
     gantt
     title Planification du projet Simulation Hôpital
@@ -9,7 +11,7 @@
 
     section Mois 1 - Analyse et Conception
     Analyse des besoins: 14/02/2025, 3w
-    Définition des objectifs et répartition des tâches: 21/02/2025, 2w
+    Définition des objectifs et répartition des tâches: 14/02/2025, 2w
     Choix des technologies et architecture logicielle: 28/02/2025, 1w
 
     section Mois 2 - Modélisation
@@ -36,3 +38,28 @@
     Presentation finale: milestone, 20/06/2025, 7d
     Evaluation des projets: milestone, 27/06/2025, 1d
 ```
+
+### Répartition des tâches
+
+| Tâche | Responsable(s) |
+|-------------------------------|----------------|
+| Analyse des besoins | Tous |
+| Définition des objectifs et répartition des tâches | Tous |
+| Choix des technologies et architecture logicielle | Lukas & Arsene |
+| Conception du modèle de simulation | Carl & Maxence |
+| Conception de la base de données | Arsene |
+| Conception du dashboard web | Lukas |
+| Développement de la simulation des lits hospitaliers | Carl & Maxence |
+| Développement du dashboard web interactif | Lukas & Arsene |
+| Implémentation des outils d'analyse et optimisation | Tous/TBD |
+| Connexion entre simulation et dashboard web | Lukas & Carl |
+| Tests, validation et corrections | Tous |
+| Documentation et rédaction du rapport | Maxence & Arsene |
+| Préparation et finalisation de la présentation | Tous |
+| Validation des choix techniques | Tous |
+| Validation de la conception | Tous |
+| Vérification de l'avancement | Tous |
+| Validation finale des tests | Tous |
+| Présentation finale | Tous |
+| Évaluation des projets | - |
+

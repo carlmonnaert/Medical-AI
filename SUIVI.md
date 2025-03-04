@@ -30,4 +30,13 @@
 
 ## 04/03
 
-- **(Carl)** Nous avons réalisé des dernières modifications sur la simulation pour optimiser notre algorithme de simulation. Pour des questions de temps de calcul on se restreindra d'abbord à un seul hopital puis lorsque suffisament de fonctionalitées seront disponibles nous ajouterons une dimension spatiale etc. Pour la suite, je suis en train de suivre le cours de typescript en accéléré et de me renseigner sur la manière d'afficher nos graphes en temps réel, soit en faisant tourner le code côté client, soit en intérogeant seulement une base de donnée que nous aurons rempli préalablement avec nos résultats de simulations.
+- **(Carl)** : Nous avons réalisé des dernières modifications sur la simulation pour optimiser notre algorithme de simulation. Pour des questions de temps de calcul on se restreindra d'abbord à un seul hopital puis lorsque suffisament de fonctionalitées seront disponibles nous ajouterons une dimension spatiale etc. Pour la suite, je suis en train de suivre le cours de typescript en accéléré et de me renseigner sur la manière d'afficher nos graphes en temps réel, soit en faisant tourner le code côté client, soit en intérogeant seulement une base de donnée que nous aurons rempli préalablement avec nos résultats de simulations.
+- **(Maxence)** : Fin des recherches bibliographiques. J'ai trouvé la première modélisation assez simple de notre simulation. J'ai commencé à en parler avec Carl pour l'implémentation.
+
+
+
+
+
+
+
+

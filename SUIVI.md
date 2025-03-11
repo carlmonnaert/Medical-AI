@@ -42,7 +42,8 @@
 
 
 - **(Carl)** :
-- **(Maxence)** : 
+
+- **(Maxence)** : Mise en place de la simulation qui a fonctionné. 
 
 - **(Arsene)** : 
 

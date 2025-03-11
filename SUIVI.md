@@ -41,7 +41,7 @@
 
 
 
-- **(Carl)** :
+- **(Carl)** : Code de la nouvelle méthode de simulation en boucle infinie, tests de plusieurs paramètres pour quantifier le débit d'arrivée et le débit de sortie. Pour la prochaine fois implémenter une interface graphique en lien avec Lukas pour afficher sur une page web
 
 - **(Maxence)** : Mise en place de la simulation qui a fonctionné (Simulation_Rapide.py). Aucun problème de compléxité et réfléxion sur la manière de s'approcher un peu plus de la réalité.
 

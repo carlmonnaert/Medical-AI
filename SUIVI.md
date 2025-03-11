@@ -35,6 +35,8 @@
 
 - **(Arsene)** : Choix du SQL pour les differentes base de donnees que nous allons construire avec nos simulations. Renseignement sur les differentes structures/architectures possibles de ces DBs.
 
+- **(Lukas)** : Recherche bibliographique pour interface graphique, la première version sera faite avec la bibliothèque Tkinter et si elle ne suffit pas, passage possible sur une autre biblio comme Dash ou Streamlit 
+
 
 
 

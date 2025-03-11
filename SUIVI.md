@@ -37,7 +37,16 @@
 
 - **(Lukas)** : Recherche bibliographique pour interface graphique, la première version sera faite avec la bibliothèque Tkinter et si elle ne suffit pas, passage possible sur une autre biblio comme Dash ou Streamlit 
 
+## 04/03
 
+
+
+- **(Carl)** :
+- **(Maxence)** : 
+
+- **(Arsene)** : 
+
+- **(Lukas)** : 
 
 
 

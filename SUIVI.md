@@ -43,7 +43,7 @@
 
 - **(Carl)** :
 
-- **(Maxence)** : Mise en place de la simulation qui a fonctionné. 
+- **(Maxence)** : Mise en place de la simulation qui a fonctionné (Simulation_Rapide.py). Aucun problème de compléxité et réfléxion sur la manière de s'approcher un peu plus de la réalité.
 
 - **(Arsene)** : 
 

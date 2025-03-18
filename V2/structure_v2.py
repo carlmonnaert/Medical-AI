@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import random as rd
-
+import time
 
 class Hopital:
 
@@ -15,17 +15,23 @@ class Hopital:
         self.files_attente = [ [] for k in range(files_attente) ]
         self.lambda_poisson = lambda_poisson
         self.mu_exponetielle = mu_exponetielle
+        self.prochaine_arrivee = 0
 
     def arrivee_patients(self):
         """
         Génère les arrivées de patients
         """
-        nb_arrivees = np.random.poisson(self.lambda_poisson * self.dt)
-        for k in range(nb_arrivees):
-            nb_files = len(self.files_attente)
-            temps_de_traitement = np.random.exponential(self.mu_exponetielle)
-            self.files_attente[k % nb_files].append(Personne(temps_de_traitement,False,self.dt))
+        if self.prochaine_arrivee <= 0:            
+            
+            prochaine_arrivee = np.random.poisson(self.lambda_poisson*self.dt)
+            self.prochaine_arrivee = prochaine_arrivee
 
+            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle*self.dt))
+            nb_files = len(self.files_attente)
+            patient = Personne(temps_de_traitement,self.dt)
+            self.files_attente[rd.randint(0,nb_files)].append(patient)
+        else:
+            self.prochaine_arrivee -= self.dt
 
     def mise_a_jour_patients(self):
         """
@@ -35,8 +41,26 @@ class Hopital:
             for personne in file:
                 personne.mise_a_jour()
             
-        for file in self.files_attente:
-            file = [personne for personne in file if personne.temps_de_traitement > 0]
+        for k in range(len(self.files_attente)):
+            avant = len(self.files_attente[k])
+            self.files_attente[k] = [personne for personne in self.files_attente[k] if personne.temps_de_traitement > 0]
+            apres = len(self.files_attente[k])
+
+            print("Personnes traitées : ", avant-apres)
+
+    def suivant(self):
+        """
+        Passe au tour de boucle suivant
+        """
+        self.arrivee_patients()
+        self.mise_a_jour_patients()
+
+    def __str__(self):
+        """
+        Affiche l'état de l'hôpital
+        """
+        for k in range(len(self.files_attente)):
+            print("File d'attente ", k+1, " : ", len(self.files_attente[k]), " personnes")
 
 class Personne:
     """
@@ -44,11 +68,22 @@ class Personne:
     :param temps_de_traitement: temps de traitement de la personne
     :param statut: statut de la personne (False : en attente ou True : en traitement)
     """
-    def __init__(self,temps_de_traitement : int, statut : bool = False,dt : int = 1):
+    def __init__(self,temps_de_traitement : int,dt : int = 1):
         self.temps_de_traitement = temps_de_traitement
-        self.statut = statut
         self.dt = dt
 
     def mise_a_jour(self):
-        if self.statut:
-            self.temps_de_traitement -= self.dt
+        self.temps_de_traitement -= self.dt
+        if self.temps_de_traitement <= 0:
+            print("Patient traité")
+
+def run():
+    h = Hopital(60*12,1,5,5)
+    compte = 0
+    while True :
+        print("\n\ntemps : ", h.dt*compte)
+        h.suivant()
+        h.__str__()
+        compte += 1
+        time.sleep(1)
+run()

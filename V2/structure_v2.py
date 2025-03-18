@@ -16,6 +16,7 @@ class Hopital:
         self.lambda_poisson = lambda_poisson
         self.mu_exponetielle = mu_exponetielle
         self.prochaine_arrivee = 0
+        self.soignés = 0
 
     def arrivee_patients(self):
         """
@@ -47,6 +48,7 @@ class Hopital:
             apres = len(self.files_attente[k])
 
             print("Personnes traitées : ", avant-apres)
+            self.soignés += avant-apres
 
     def suivant(self):
         """
@@ -60,6 +62,7 @@ class Hopital:
         Affiche l'état de l'hôpital
         """
         for k in range(len(self.files_attente)):
+            print("total traité : ", self.soignés)
             print("File d'attente ", k+1, " : ", len(self.files_attente[k]), " personnes")
 
 class Personne:
@@ -78,7 +81,7 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(60*12,1,5,5)
+    h = Hopital(60*12,1,100,100)
     compte = 0
     while True :
         print("\n\ntemps : ", h.dt*compte)

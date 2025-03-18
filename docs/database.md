@@ -11,8 +11,8 @@ references are possible.
 `DatabaseManager(self, db_path)` : initiates the connection (and db-cursor) with the database at the given path. Creates it if the given path does not exist.
 
 `DatabaseManager.create_table(self, table_name, entries)` : creates a table with the name `table_name` with the columns specified by the **list of tuple(s)** `entries`.
- - table_name:str -> the name of the table to create,
- - entries:List(Tuple) -> a list of entries in tuples containing (type, name, entry_type);
+ - table_name:`str` -> the name of the table to create,
+ - entries:`List(Tuple)` -> a list of entries in tuples containing (type, name, entry_type);
     Each entry must be formatted as followed :
      - An entry type (`int`) : `0` for *classic key*, `1` for *primary key* and *2* for *foreign/reference key*;
      - An entry name (`str`): the name of the columns/entry;
@@ -28,7 +28,7 @@ references are possible.
 
 `DatabaseManager.query_table(self, instruction)` : executes an sql-query:
  - instruction:`str` -> the query to execute.
-> [!WARNING]
+> [!warning]
 > this function executes blindly the instruction given, and thus should not be an interface to untrusted-user
 
 ### Miscellaneous

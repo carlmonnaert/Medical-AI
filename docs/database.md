@@ -29,7 +29,7 @@ references are possible.
 `DatabaseManager.query_table(self, instruction)` : executes an sql-query:
  - instruction:`str` -> the query to execute.
 > [!warning]
-> this function executes blindly the instruction given, and thus should not be an interface to untrusted-user
+> This function executes blindly the instruction given, and thus should not be an interface to untrusted-user.
 
 ### Miscellaneous
 

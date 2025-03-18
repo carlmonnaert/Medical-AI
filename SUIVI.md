@@ -57,11 +57,4 @@
 - **(Carl)** :
 - **(Maxence)** :
 - **(Lukas)** :
-- **(Arsene)** :
-
-
-
-
-
-
-
+- **(Arsene)** : Interface simple avec une db sql terminée (création, insertion, requêtes). Ajout d'une documenation également. Discussion avec les autres membres du groupe pour connaitre leur(s) besoin(s)/avancement en terme de données.

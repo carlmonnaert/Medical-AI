@@ -3,7 +3,6 @@
 
 ## 14/02
 
-
 - Découverte du sujet et mise en place d'un plan d'action pour la réalisation du projet. Nous nous sommes mis d'accord sur language que nous allions utilisé pour la simulation (Python) et les bibliothèques utiles.
 
 - **(Tout le monde)** Carl et Lukas commencé la première simulation assez rapide du problème tant dis que Maxence et Arsène ont commencé à faire des recherches bibliographiques pour comprendre comment avoir une simulation et un modéle mathématique qui s'approche de la réalité (structure.py).
@@ -15,7 +14,9 @@
 - **(Maxence, Lukas)** C'est notre rôle de trouver et comprendre les mathématiques derriere la gestion des patients au sein d'un hopital. Nous avons découvert une revue scientifique ("Modélisation d'un file d'attente" : https://math.univ-lyon1.fr/~alachal/serveurOT/files_attente.pdf) et allons nous inspirer du modele utilisé dans les centres d'appel ie la loi d'Erlang, nous sommes dans la phase de compréhension de ce modéle et de détermination des hypothèses que nous allons faire.
 -  De son côté, **(Arsène)** a trouvé des bases de données open source très intéressantes dans lequel on peut trouver le temps moyen que chaque patient attend dans l'hopital, le nombre de lit, le nombre de patient qui reste plus de 3 mois. Et toutes ces informations sur les 15 dernières années.
 
+
 ## 20/02
+
 - **(Tous)** : RDV avec M. Clemençon (encadrant du projet), pour se mettre au point sur le projet, et lui poser nos questions :
     - Q : *Quelle est le livrable attendu du projet ?*
         - R : MINIMUM -> simulation d'hôpital simple + dashboard visualisation | OBJECTIF -> Avancer le + possible simulation/dashboard dans le but d'avoir un prototype intéressant pour un service de santé.
@@ -24,9 +25,11 @@
     - Mise en garde : Communication cruciale, Commencer par des choses simples puis incrémenter, Discuter de l'avancement fréquemment.
     - Proposition de ressources : *Processus ponctuel marqué*, Méthode de dvpt *agile*.
 
+
 ## 21/02
 
  - **(Tous)** : mise en place du planning -> Affectation des "rôles"/tâches de chacun et de leur répartition dans l'avancement du projet.
+
 
 ## 04/03
 
@@ -34,6 +37,27 @@
 - **(Maxence)** : Fin des recherches bibliographiques. J'ai trouvé la première modélisation assez simple de notre simulation. J'ai commencé à en parler avec Carl pour l'implémentation.
 
 - **(Arsene)** : Choix du SQL pour les differentes base de donnees que nous allons construire avec nos simulations. Renseignement sur les differentes structures/architectures possibles de ces DBs.
+
+- **(Lukas)** : Recherche bibliographique pour interface graphique, la première version sera faite avec la bibliothèque Tkinter et si elle ne suffit pas, passage possible sur une autre biblio comme Dash ou Streamlit 
+
+
+## 11/03
+
+- **(Carl)** : Code de la nouvelle méthode de simulation en boucle infinie, tests de plusieurs paramètres pour quantifier le débit d'arrivée et le débit de sortie. Pour la prochaine fois implémenter une interface graphique en lien avec Lukas pour afficher sur une page web
+
+- **(Maxence)** : Mise en place de la simulation qui a fonctionné (Simulation_Rapide.py). Aucun problème de compléxité et réfléxion sur la manière de s'approcher un peu plus de la réalité.
+
+- **(Arsene)** : Implémenation d'une interface SQL avec python (sqlite3), fonction pour créer une table avec des clés de différents types.
+
+- **(Lukas)** : Implementation d'un premier dashboard tres simpliste.
+
+
+## 18/03
+
+- **(Carl)** :
+- **(Maxence)** :
+- **(Lukas)** :
+- **(Arsene)** :
 
 
 

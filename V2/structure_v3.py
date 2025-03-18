@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 18 10:42:47 2025
+
+@author: maxence
+"""
+
 import numpy as np
 from numpy import random as rd
 from datetime import datetime, timedelta
@@ -14,8 +22,8 @@ class Hopital:
         """
         self.dt = dt
         self.files_attente = [ [] for k in range(files_attente) ]
-        self.lambda_poisson = lambda_poisson
-        self.mu_exponetielle = mu_exponetielle
+        self.lambda_poisson = 1/lambda_poisson #nombre de gens qui arrive par heure
+        self.mu_exponetielle = 1/mu_exponetielle #temps moyen du temps de traitement 
         self.prochaine_arrivee = 0
         self.soignés = 0
 
@@ -23,12 +31,12 @@ class Hopital:
         """
         Génère les arrivées de patients
         """
-        if self.prochaine_arrivee <= 0:            
+        if self.prochaine_arrivee <= 0:         
             
-            prochaine_arrivee = np.random.poisson(self.lambda_poisson*self.dt)
+            prochaine_arrivee = np.random.poisson(self.lambda_poisson*self.dt*60)
             self.prochaine_arrivee = prochaine_arrivee
 
-            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle*self.dt))
+            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle*self.dt*60))
             nb_files = len(self.files_attente)
             patient = Personne(temps_de_traitement,self.dt)
             self.files_attente[rd.randint(0,nb_files)].append(patient)
@@ -82,12 +90,12 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(60*5,1,3,2)
+    h = Hopital(1,1,5,3)
     compte = 0
     while True :
-        print("\n\nHeure : ", timedelta(seconds=h.dt*compte))
+        print("\n\nHeure : ", timedelta(minutes=h.dt*compte))
         h.suivant()
         h.__str__()
         compte += 1
-        time.sleep(0.4)
+        time.sleep(0.3)
 run()

@@ -4,7 +4,7 @@ import time
 
 class Hopital:
 
-    def __init__(self, dt : int, files_attente=1, lambda_poisson=1, mu_exponetielle=1):
+    def __init__(self, dt : int = 5*60, files_attente=1, lambda_poisson=1, mu_exponetielle=1):
         """
         Classe qui représente un hôpital
         :param dt: durée d'un tour de boucle
@@ -27,7 +27,7 @@ class Hopital:
             prochaine_arrivee = np.random.poisson(self.lambda_poisson*self.dt)
             self.prochaine_arrivee = prochaine_arrivee
 
-            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle*self.dt))
+            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle))
             nb_files = len(self.files_attente)
             patient = Personne(temps_de_traitement,self.dt)
             self.files_attente[rd.randint(0,nb_files)].append(patient)
@@ -46,8 +46,6 @@ class Hopital:
             avant = len(self.files_attente[k])
             self.files_attente[k] = [personne for personne in self.files_attente[k] if personne.temps_de_traitement > 0]
             apres = len(self.files_attente[k])
-
-            print("Personnes traitées : ", avant-apres)
             self.soignés += avant-apres
 
     def suivant(self):
@@ -81,7 +79,7 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(60*12,1,100,100)
+    h = Hopital(files_attente = 1,lambda_poisson = 1, mu_exponetielle=1)
     compte = 0
     while True :
         print("\n\ntemps : ", h.dt*compte)

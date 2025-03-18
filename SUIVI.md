@@ -47,7 +47,7 @@
 
 - **(Arsene)** : 
 
-- **(Lukas)** : 
+- **(Lukas)** : Implementation d'un premier dashboard tres simpliste.
 
 
 

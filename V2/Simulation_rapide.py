@@ -7,12 +7,13 @@ Created on Tue Mar 11 09:41:49 2025
 import heapq
 import numpy as np
 from datetime import datetime, timedelta
+import time
 
 # Paramètres
-lambda_arrivee = 5  # taux moyen de nouveau patients par heure
+lambda_arrivee = 6  # taux moyen de nouveau patients par heure
 mu_service = 2  # taux moyen patients traités par heure
-n_medecins = 4  # Nombre de médecins disponibles
-temps_total = 24  # Simulation sur 24 heures
+n_medecins = 3  # Nombre de médecins disponibles
+temps_total = 20  # Simulation sur 24 heures
 heure_depart_simulation = datetime.strptime("08:00:00", "%H:%M:%S")  # Début de la journée
 
 
@@ -38,14 +39,15 @@ for i in range(len(temps_arrivees)):
     heure_debut_service_dt = heure_depart_simulation + timedelta(hours=heure_debut_service)
     heure_fin_service_dt = heure_depart_simulation + timedelta(hours=heure_fin_service)
 
-    file_attente.append((heure_arrivee_dt, heure_debut_service_dt, heure_fin_service_dt) # Stocke les résultats) 
+    file_attente.append((heure_arrivee_dt, heure_debut_service_dt, heure_fin_service_dt)) # Stocke les résultats
     
     heapq.heappush(medecins_disponibles, heure_fin_service)  # Mettre à jour la disponibilité du médecin
 
 print("\nSimulation des consultations avec plusieurs médecins :")
-print("--------------------------------------------------------")
+print("--------------------------------------------------------\n")
 for i, (arrivee, debut, fin) in enumerate(file_attente):
-    print(f"Patient {i+1}: Arrivée à {arrivee.strftime('%H:%M:%S')}, "
-          f"Début consultation à {debut.strftime('%H:%M:%S')}, "
-          f"Fin consultation à {fin.strftime('%H:%M:%S')}\n")
-
+    time.sleep(0.5)
+    print(f"Patient {i+1} : \n"
+          f"   Arrivée            : {arrivee.strftime('%H:%M:%S')}\n "
+          f"  Début consultation : {debut.strftime('%H:%M:%S')}\n "
+          f"  Fin consultation   : {fin.strftime('%H:%M:%S')}\n\n\n")

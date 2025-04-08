@@ -13,7 +13,7 @@ class Hopital:
         :param lambda_poisson: paramètre de la loi de Poisson qui génère les arrivées de patients
         """
         self.dt = dt
-        self.files_attente = [ [] for k in range(files_attente) ]
+        self.files_attente = [ [] for k in range(files_attente) ] #Le nombre de file correspond aux nombres de médécins
         self.lambda_poisson = 1/lambda_poisson #nombre de gens qui arrive par heure
         self.mu_exponetielle = 1/mu_exponetielle #temps moyen du temps de traitement 
         self.prochaine_arrivee = 0
@@ -103,7 +103,7 @@ class Personne:
     """
     def __init__(self,temps_de_traitement : int,dt : int = 1):
         self.temps_de_traitement = temps_de_traitement
-        print(self.temps_de_traitement)
+        print(temps_de_traitement)
         self.dt = dt
 
     def mise_a_jour(self):
@@ -112,7 +112,7 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(1,2,5,3)
+    h = Hopital(1,3,20,8)
     compte = 0
     while True :
         print("\n\nHeure                      :",timedelta(minutes=h.dt*compte))

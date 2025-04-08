@@ -62,6 +62,7 @@
 
 ## 8/04
 
+Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation qui génére une base de données et que cette data puisse être réutiliser à n'importe quelle moment pour poursuivre la simulation. L'objectif à long terme est de "stopper" la simulation. Modifié la base de données pour modéliser un événement et voir comment notre simulation réagit à ce changement. 
 - **(Carl)** :
 - **(Maxence)** :
 - **(Lukas)** :

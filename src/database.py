@@ -1,7 +1,5 @@
 import sqlite3 as sq
 
-PATIENTS_DB = "./data/patients.db"
-EVENTS_DB = "./data/events.db"
 
 sql_match_type = {
     str: "TEXT",
@@ -17,7 +15,7 @@ class DatabaseManager:
         self.cur = self.con.cursor()
         self.tables = set()  # store table names
 
-    def create_table(self, table_name, entries):  # [(type, name , entry_type)]
+    def create_table(self, table_name, entries, force=False):  # [(type, name , entry_type)]
         """Create a table with entries:
         - table_name:str -> the name of the table to create,
         - entries:List(Tuple) -> each entry in a tuple containing (type, name, entry_type)
@@ -26,7 +24,10 @@ class DatabaseManager:
         containing (foreign_db_name:str, foreign_db_key).
         """
 
-        instructions_str = "CREATE TABLE "
+        if force:
+            instructions_str = "CREATE TABLE "
+        else:
+            instructions_str = "CREATE TABLE IF NOT EXISTS "
         instructions_str += table_name + "("
         for entry in entries:
             if len(entry) != 3:
@@ -80,6 +81,34 @@ class DatabaseManager:
                 format_str += r"?, "
 
         self.cur.execute(instructions_str + " VALUES " + format_str, to_insert_values)
+        self.con.commit()
+        return 0
+
+    def update_value(self, table_name, to_update_keys, to_update_values, condition):
+        """Update an entry in an existing table:
+        - table_name:str -> the name of the table that will be updated,
+        - to_update_keys:tuple(str) -> a tuple containing the name of the keys that will be inserted,
+        - to_update_values:tuple(Any) -> a tuple containing the values to insert MATCHING THE ORDER OF THE GIVEN KEYS,
+        - condition:str -> a string specifying the condition of the update.
+        WARNING : this function executes blindly the condition given, and thus should not be an interface to untrusted-user
+        """
+
+        if table_name not in self.tables:
+            print("ERROR - Cannot add values into a table that does not exist.")
+            return 3
+        instructions_str = f"UPDATE {table_name} SET "
+        if len(to_update_keys) != len(to_update_values):
+            print(
+                "ERROR - The number of values given does not match the number of keys."
+            )
+            return 4
+        for i in range(len(to_update_keys)):
+            if i == len(to_update_keys) - 1:
+                instructions_str += f"{to_update_keys[i]}={to_update_values[i]} "
+            else:
+                instructions_str += f"{to_update_keys[i]}={to_update_values[i]}, "
+
+        self.cur.execute(instructions_str + "WHERE " + condition)
         self.con.commit()
         return 0
 

@@ -25,11 +25,20 @@ references are possible.
  - to_insert_keys:`tuple(str)` -> a tuple containing the name of the keys that will be inserted,
  - to_insert_values:`tuple(Any)` -> a tuple containing the values to insert MATCHING THE ORDER OF THE GIVEN KEYS.
 
+`DatabaseManager.update_value(self, table_name, to_update_keys, to_update_values, condition)` : update an entry in an existing table.
+    - table_name:`str` -> the name of the table that will be updated,
+    - to_update_keys:`tuple(str)` -> a tuple containing the name of the keys that will be inserted,
+    - to_update_values:`tuple(Any)` -> a tuple containing the values to insert MATCHING THE ORDER OF THE GIVEN KEYS,
+    - condition:`str` -> a string specifying the condition of the update.
+> [!warning]
+> this function executes blindly the condition given, and thus should not be an interface to untrusted-user
+
 
 `DatabaseManager.query_table(self, instruction)` : executes an sql-query:
  - instruction:`str` -> the query to execute.
 > [!warning]
 > This function executes blindly the instruction given, and thus should not be an interface to untrusted-user.
+
 
 ### Miscellaneous
 
@@ -40,6 +49,7 @@ references are possible.
 - `"BOOL", "bool", bool` : match the "BOOL/BOOLEAN" datatype of SQLite
 - `"DATE", "date"` : match the "DATE" datatype of SQLite.
 - `"NULL", None`: match the "NULL" datatype of SQLite.
+
 
 
 

@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr  8 10:57:05 2025
-
-@author: maxence
-"""
-
 import numpy as np
 from numpy import random as rd
 from datetime import datetime, timedelta

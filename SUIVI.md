@@ -62,10 +62,10 @@
 
 ## 8/04
 
-Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation qui génére une base de données et que cette data puisse être réutiliser à n'importe quelle moment pour poursuivre la simulation. L'objectif à long terme est de "stopper" la simulation. Modifié la base de données pour modéliser un événement et voir comment notre simulation réagit à ce changement. 
+Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation qui génére une base de données et que cette data puisse être réutiliser à n'importe quelle moment pour poursuivre la simulation. L'objectif à long terme est de "stopper" la simulation. Modifier la base de données pour modéliser un événement et voir comment notre simulation réagit à ce changement. 
 - **(Maxence, Carl)** : Aujourd'hui, nous avons finalisé la simulation rapide que nous avions envisagé (Simulation_Rapide_2). Tout marche bien, mais certaines modifications devront être fait. On va pouvoir tester si la simulation et le travail de Arsene sur la base de données marchent bien ensemble. Pour la prochaine fois, il faudra perfectionner la gestion des médécins et comprendre pourquoi lorsque nos paramètres sont trop élévés, le proccesus de file d'attente ne fonctionne plus.
 - **(Lukas)** :
-- **(Arsene)** :
+- **(Arsene)** : Implémentation de l'interface spécifique à la base de données de l'hôpital.
 
 
 
@@ -90,3 +90,4 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 
 
+jjj

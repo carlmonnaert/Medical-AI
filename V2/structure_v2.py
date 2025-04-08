@@ -14,8 +14,8 @@ class Hopital:
         self.dt = dt
         self.files_attente = [ [] for k in range(files_attente) ]
         self.en_consultation = [None for k in range(N_medecins)]
-        self.lambda_poisson = lambda_poisson
-        self.mu_exponetielle = mu_exponetielle
+        self.lambda_poisson = lambda_poisson #nombre de gens qui arrive par heure
+        self.mu_exponetielle = mu_exponetielle #temps moyen du temps de traitement en minute
         self.prochaine_arrivee = 0
         self.soignés = 0
 

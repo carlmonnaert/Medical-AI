@@ -40,8 +40,8 @@ class Hopital:
         Met à jour l'état de l'hôpital
         """
         for file in self.files_attente:
-            for personne in file:
-                personne.mise_a_jour()
+            if len(file) > 0:
+                file[-1].mise_a_jour()
             
         for k in range(len(self.files_attente)):
             avant = len(self.files_attente[k])

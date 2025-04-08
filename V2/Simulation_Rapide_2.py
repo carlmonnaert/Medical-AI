@@ -171,7 +171,7 @@ class Personne:
     """
     def __init__(self, temps_de_traitement : int, dt : int = 1):
         self.temps_de_traitement = temps_de_traitement
-        print(temps_de_traitement)
+        #print(temps_de_traitement)
         self.dt = dt
 
     def mise_a_jour(self):

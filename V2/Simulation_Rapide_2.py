@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr  8 15:40:13 2025
-
-@author: maxence
-"""
-
 import numpy as np
 from numpy import random as rd
 from datetime import datetime, timedelta
@@ -44,7 +36,7 @@ class Hopital:
         self.medecins = [Medecin(i+1) for i in range(files_attente)]
         self.files_attente = [medecin.file_attente for medecin in self.medecins]  # Référence aux files des médecins
         self.lambda_poisson = 1/lambda_poisson  # nombre de gens qui arrive par heure
-        self.mu_exponetielle = 1/mu_exponetielle  # temps moyen du temps de traitement 
+        self.mu_exponetielle = mu_exponetielle  # temps moyen du temps de traitement 
         self.prochaine_arrivee = 0
         self.soignés = 0
         self.temps_total = 0
@@ -58,8 +50,10 @@ class Hopital:
         if self.prochaine_arrivee <= 0:         
             prochaine_arrivee = np.random.poisson(self.lambda_poisson*self.dt*60)
             self.prochaine_arrivee = prochaine_arrivee
-    
-            temps_de_traitement = int(np.random.exponential(self.mu_exponetielle*self.dt*60))
+
+            # Utilisation directe de mu_exponentielle comme moyenne pour la distribution exponentielle
+            # Ajout d'un max pour éviter les temps de traitement trop courts
+            temps_de_traitement = max(1, int(np.random.exponential(self.mu_exponetielle)))
             
             # Identifier les médecins libres
             medecins_libres = [medecin for medecin in self.medecins if not medecin.occupe]
@@ -187,7 +181,7 @@ class Personne:
             
 
 def run():
-    h = Hopital(1, 3, 20, 3)
+    h = Hopital(1, 3, 8, 50) # dt = 1 minutes ; nombre de médecins = 3 ; nombre moyen d'arrivé en une heure : 20 ; temps de traitement : 10
     compte = 0
     
     try:
@@ -203,3 +197,19 @@ def run():
 
 if __name__ == "__main__":
     run() 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

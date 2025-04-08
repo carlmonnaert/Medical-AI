@@ -4,7 +4,7 @@ import time
 
 class Hopital:
 
-    def __init__(self, dt : int = 5*60, files_attente=1, lambda_poisson=1, mu_exponetielle=1):
+    def __init__(self, dt : int = 5*60, files_attente=1, N_medecins=1, lambda_poisson=1, mu_exponetielle=1):
         """
         Classe qui représente un hôpital
         :param dt: durée d'un tour de boucle
@@ -13,6 +13,7 @@ class Hopital:
         """
         self.dt = dt
         self.files_attente = [ [] for k in range(files_attente) ]
+        self.en_consultation = [None for k in range(N_medecins)]
         self.lambda_poisson = lambda_poisson
         self.mu_exponetielle = mu_exponetielle
         self.prochaine_arrivee = 0

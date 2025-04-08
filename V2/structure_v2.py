@@ -80,7 +80,7 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(dt=60*5,files_attente = 1,lambda_poisson = 3, mu_exponetielle=3)
+    h = Hopital(dt=60*5,files_attente = 1,lambda_poisson = 500, mu_exponetielle= 5)
     compte = 0
     while True :
         print("\n\ntemps : ", h.dt*compte)

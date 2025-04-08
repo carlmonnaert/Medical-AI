@@ -82,7 +82,7 @@ class Personne:
             print("Patient traité")
 
 def run():
-    h = Hopital(1,1,5,3)
+    h = Hopital(1,1,100,3)
     compte = 0
     while True :
         print("\n\nHeure : ", timedelta(minutes=h.dt*compte))

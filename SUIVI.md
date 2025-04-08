@@ -58,3 +58,35 @@
 - **(Maxence)** : Amélioration de la simulation en essayant de modifier certains paramètres comme le taux moyen d'arrivé en une heure, le nombre de médécin, le temps moyen de consultation.
 - **(Lukas)** :
 - **(Arsene)** : Interface simple avec une db sql terminée (création, insertion, requêtes). Ajout d'une documenation également. Discussion avec les autres membres du groupe pour connaitre leur(s) besoin(s)/avancement en terme de données.
+
+
+## 8/04
+
+- **(Carl)** :
+- **(Maxence)** :
+- **(Lukas)** :
+- **(Arsene)** :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

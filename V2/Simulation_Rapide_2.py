@@ -16,10 +16,12 @@ class Medecin:
     
     def __str__(self):
         """
-        Affiche l'état du médecin
+        Affiche l'état du médecin 
         """
         statut = "Occupé" if self.occupe else "Libre"
-        return f"Médecin {self.id}: {statut}, Patients en attente: {len(self.file_attente)}, Patients traités: {self.patients_traites}"
+        
+        return f"{'MEDECIN :':<10}{'STATUT':<10}{'PATIENTS EN ATTENTE':<20}{'PATIENTS TRAITÉS'}\n" \
+               f"Medecin {self.id:<3}\t{statut:<10}{len(self.file_attente):<20}{self.patients_traites}"
 
 class Hopital:
 
@@ -106,13 +108,20 @@ class Hopital:
         self.file_attente()
         self.en_consultation()
         self.nombre_total_traite()
-        
-        # Afficher l'état de chaque médecin
+    
+        # Afficher l'état de chaque médecin sous forme de tableau
         print("\nÉtat des médecins:")
+        header = f"{'MEDECIN':<10}\t\t{'STATUT':<10}{'PATIENTS EN ATTENTE':^22}{'PATIENTS TRAITÉS':^20}"
+        print("-" * (len(header) +4))
+        print(header)
+        print("-" * (len(header) +4))
         for medecin in self.medecins:
-            print(f"  {medecin}")
-            
-        return ""  # Retourne une chaîne vide car l'affichage est déjà fait
+            statut = "Occupé" if medecin.occupe else "Libre"
+            ligne = f"{'Médecin ' + str(medecin.id):<10}\t\t{statut:<10}{str(len(medecin.file_attente)).center(20)}{str(medecin.patients_traites).center(22)}"
+            print(ligne)
+    
+        return ""
+        
             
     def nombre_total_traite(self): 
         """
@@ -145,9 +154,9 @@ class Hopital:
         print(f"Nombre total de patients arrivés: {self.patients_totaux}")
         print(f"Nombre total de patients traités: {self.soignés}")
         
-        print("\nStatistiques par médecin:")
+        print("\nStatistiques par médecin:\n")
         for medecin in self.medecins:
-            print(f"  Médecin {medecin.id}: {medecin.patients_traites} patients traités")
+            print(f"  {'Médecin ' + str(medecin.id):<10} : {medecin.patients_traites:} patients traités")
         
         print("\nEfficacité du système:")
         if self.temps_total > 0:
@@ -177,11 +186,12 @@ class Personne:
     def mise_a_jour(self):
         self.temps_de_traitement -= self.dt
         if self.temps_de_traitement <= 0:
-            print("Patient traité")
+            #print("Patient traité")
+            pass
             
 
 def run():
-    h = Hopital(1, 3, 8, 50) # dt = 1 minutes ; nombre de médecins = 3 ; nombre moyen d'arrivé en une heure : 20 ; temps de traitement : 10
+    h = Hopital(1, 10, 40, 20) # dt = 1 minutes ; nombre de médecins = 3 ; nombre moyen d'arrivé en une heure : 20 ; temps de traitement : 10
     compte = 0
     
     try:

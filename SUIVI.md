@@ -54,7 +54,6 @@
 
 ## 18/03
 
-- **(Carl)** :
 - **(Maxence)** : Amélioration de la simulation en essayant de modifier certains paramètres comme le taux moyen d'arrivé en une heure, le nombre de médécin, le temps moyen de consultation.
 - **(Lukas)** :
 - **(Arsene)** : Interface simple avec une db sql terminée (création, insertion, requêtes). Ajout d'une documenation également. Discussion avec les autres membres du groupe pour connaitre leur(s) besoin(s)/avancement en terme de données.
@@ -74,4 +73,29 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 ## 15/04
 
 - **(Maxence)** : J'ai rajouté à la simulation de Carl plusieurs maladies et plusieurs spécialités par médécins. Je me suis concentré aussi sur l'explication de chaque ligne de code (Simulation_Plusiseurs_Médecins dans la V2) pour que Arsene et Lukas comprennent plus facilement la structure et puisse implémenter leurs parties.
+- **(Carl)** :
+- **(Lukas)** :
+- **(Arsene)** :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 17/04
+
+**(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé....
+
+
+
+
 

@@ -215,6 +215,10 @@ class Hopital:
             self.soignés += patients_traites
 
     def sauvegarder_data(self):
+        """
+        Met a jour tous les dt un fichier csv qui stock les données de l'hopital.
+        """
+
         nom_fichier = "./data/data_sim.csv"
         entetes = [
             "minute",

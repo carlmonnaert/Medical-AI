@@ -75,25 +75,19 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 - **(Maxence)** : J'ai rajouté à la simulation de Carl plusieurs maladies et plusieurs spécialités par médécins. Je me suis concentré aussi sur l'explication de chaque ligne de code (Simulation_Plusiseurs_Médecins dans la V2) pour que Arsene et Lukas comprennent plus facilement la structure et puisse implémenter leurs parties.
 - **(Carl)** :
 - **(Lukas)** :
+- **(Arsene)** : Ajout d'une fonction de sauvegarde des données de la simulation, permettant par la suite l'affichage de différentes statistiques de la simulation.
+
+## 16/04
+
+- **(Maxence)** :
+- **(Carl)** :
+- **(Lukas)** :
 - **(Arsene)** :
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 17/04
 
 **(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé....
+
 
 
 

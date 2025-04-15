@@ -1,83 +1,114 @@
-import database as db
-import time as t
+import sqlite3
+import csv
 
-DB_PATH = "../data/hospital.db"
+DB_PATH = "./data/hospital.db"
 
-DISEASES = ["generic"]
+# Global variable to hold the database connection
+conn = None
+cursor = None
 
-TABLES = {
-    "patients": [
-        (1, "id", int),
-        (0, "state", str),
-        (0, "arrival", int),
-        (0, "end", int),
-        (0, "disease", str),
-    ],
-    "events": [
-        (1, "id", int),
-        (0, "state", str),
-        (0, "start", int),
-        (0, "duration", str),
-        (2, "patient_id", ("patients", "id")),
-    ],
-    "doctors": [
-        (1, "id", int),
-        (0, "state", str),
-        (0, "state", str),
-        (2, "assigned_patient_id", ("patients", "id")),
-    ],
-}
+def initialize_database():
+    global conn, cursor
+    # Connect to the SQLite database (or create it if it doesn't exist)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
 
+    # Create tables if they do not exist
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS patients (
+        patient_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        disease TEXT,
+        arrival_time INTEGER,
+        waiting_time INTEGER,
+        treatment_start_time INTEGER,
+        treatment_end_time INTEGER,
+        status TEXT
+    )
+    ''')
 
-class HospitalDb:
-    """Class that will act as interface between the simulator and the database, to store
-    the state of our simulations.
-    """
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS doctors (
+        doctor_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        availability_status TEXT,
+        treatment_start_time INTEGER,
+        treatment_end_time INTEGER
+    )
+    ''')
 
-    def __init__(self, db_path=DB_PATH):
-        """Initiate the hospital manager:
-        - db_path:"""
-        self.manager = db.DatabaseManager(db_path)
-        self.last_update = None
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS queue_stats (
+        timestamp INTEGER,
+        queue_length INTEGER,
+    )
+    ''')
 
-    def create_patient_table(self):
-        """Create the patient table (if it doesn't exist yet)"""
-        self.manager.create_table(
-            "patients",
-            TABLES["patients"]
-        )
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS overall_stats (
+        total_patients_treated INTEGER,
+        average_treatment_time REAL,
+        doctors_available INTEGER,
+        timestamp INTEGER
+    )
+    ''')
 
-    def create_event_table(self):
-        """Create the event table (if it doesn't exist yet)"""
-        self.manager.create_table(
-            "events",
-            TABLES["events"]
-        )
+    # Commit the changes
+    conn.commit()
 
-    def create_doctor_table(self):
-        """Create the doctor table (if it doesn't exist yet)"""
-        self.manager.create_table(
-            "doctors",
-            TABLES["doctors"]
-        )
+# Function to insert patient data
+def insert_patient(arrival_time, waiting_time, treatment_start_time, treatment_end_time, status):
+    if cursor is not None:
+        cursor.execute('''
+        INSERT INTO patients arrival_time, waiting_time, treatment_start_time, treatment_end_time, status)
+        VALUES (?, ?, ?, ?, ?)
+        ''', (arrival_time, waiting_time, treatment_start_time, treatment_end_time, status))
+    if conn is not None:
+        conn.commit()
 
-    def add_patient(self, state, arrival, disease):
-        if disease not in DISEASES:
-            print(
-                f"ERROR - the specified disease ({disease}) is not supported, see documentation for more information."
-            )
-            return 1
-        if disease is None:
-            disease = "generic"
-        self.manager.insert_value(
-            "patients",
-            ("id", "state", "arrival", "disease"),
-            (id, state, arrival, disease),
-        )
+# Function to insert doctor data
+def insert_doctor(doctor_id, availability_status, specialty, treatment_start_time, treatment_end_time):
+    if cursor is not None:
+        cursor.execute('''
+        INSERT INTO doctors (availability_status, specialty, treatment_start_time, treatment_end_time)
+        VALUES (?, ?, ?, ?)
+        ''', (doctor_id, availability_status, specialty, treatment_start_time, treatment_end_time))
+    if conn is not None:
+        conn.commit()
 
-    def update_patient_state(self, patient_id):
-        self.manager.udpate_value("patients", f"id = {patient_id}")
+# Function to insert queue stats
+def insert_queue_stats(timestamp, queue_length, average_waiting_time, peak_waiting_time):
+    if cursor is not None:
+        cursor.execute('''
+        INSERT INTO queue_stats (timestamp, queue_length, average_waiting_time, peak_waiting_time)
+        VALUES (?, ?, ?, ?)
+        ''', (timestamp, queue_length, average_waiting_time, peak_waiting_time))
+    if conn is not None:
+        conn.commit()
 
-    def add_event(self, state, start, duration, patient_id):
-        # TODO
-        pass
+# Function to insert overall stats
+def insert_overall_stats(total_patients_treated, average_treatment_time, doctors_available, timestamp):
+    if cursor is not None:
+        cursor.execute('''
+        INSERT INTO overall_stats (total_patients_treated, average_treatment_time, doctors_available, timestamp)
+        VALUES (?, ?, ?, ?)
+        ''', (total_patients_treated, average_treatment_time, doctors_available, timestamp))
+        if conn is not None:
+            conn.commit()
+
+# Function to export table data to CSV
+def export_table_to_csv(table_name, file_name):
+    if cursor is not None:
+        cursor.execute(f'SELECT * FROM {table_name}')
+        rows = cursor.fetchall()
+
+        # Get column names
+        column_names = [description[0] for description in cursor.description]
+
+        # Write to CSV file
+        with open(file_name, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(column_names)
+            writer.writerows(rows)
+
+# Close the connection when the module is imported
+import atexit
+atexit.register(lambda: conn.close() if conn else None)

@@ -55,7 +55,7 @@
 ## 18/03
 
 - **(Maxence)** : Amélioration de la simulation en essayant de modifier certains paramètres comme le taux moyen d'arrivé en une heure, le nombre de médécin, le temps moyen de consultation.
-- **(Carl)** :
+- **(Carl)** : Travail en parralèle de Lukas sur un modèle de simulation en temps réel utilisable par l'interface graphique
 - **(Lukas)** : Reflexion avec les autres parties du projet sur les données fournies, changement d'api pour le dashboard (Dash).
 - **(Arsene)** : Interface simple avec une db sql terminée (création, insertion, requêtes). Ajout d'une documenation également. Discussion avec les autres membres du groupe pour connaitre leur(s) besoin(s)/avancement en terme de données.
 
@@ -82,7 +82,7 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 - **(Maxence)** :
 - **(Carl)** :
-- **(Lukas)** : 
+- **(Lukas)** :
 - **(Arsene)** :
 
 ## 17/04

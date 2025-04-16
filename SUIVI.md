@@ -69,12 +69,12 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 
 ## 11/04
-- On a décidé de compléxifier notre simulation pour ajouter plusiseurs maladies et plusieurs spécialités par médécins. On a décidé de tous cherché une méthode pour le faire pour ensuite le partage mardi et prendre celle qui marche le mieux.
+- **(Tous)**On a décidé de compléxifier notre simulation pour ajouter plusiseurs maladies et plusieurs spécialités par médécins. On a décidé de tous chercher une méthode pour le faire pour ensuite le partager mardi et prendre celle qui marche le mieux.
 
 ## 15/04
 
 - **(Maxence)** : J'ai rajouté à la simulation de Carl plusieurs maladies et plusieurs spécialités par médécins. Je me suis concentré aussi sur l'explication de chaque ligne de code (Simulation_Plusiseurs_Médecins dans la V2) pour que Arsene et Lukas comprennent plus facilement la structure et puisse implémenter leurs parties.
-- **(Carl)** :
+- **(Carl)** : Mise en commun de notre simulation Avec Lukas et Arsène pour la production d'une interface graphique et d'un fichier CSV commun aux 4 éléments de notre groupe 
 - **(Lukas)** : Premier dashboard fonctionnel, decision avec mes pairs de stocker les données sous la forme d'un fichier csv.
 - **(Arsene)** : Ajout d'une fonction de sauvegarde des données de la simulation, permettant par la suite l'affichage de différentes statistiques de la simulation.
 

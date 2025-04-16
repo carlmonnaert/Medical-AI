@@ -157,7 +157,6 @@ class Hopital:
             patient = Personne(
                 temps_de_traitement, self.dt, maladie, specialite_requise
             )
-            db.insert_patient(patient_id, arrival_time, waiting_time, treatment_start_time, treatment_end_time, status):
             self.patients_totaux += 1
 
             # Attribution du patient à un médecin de la bonne spécialité
@@ -360,5 +359,4 @@ def run():
 
 
 if __name__ == "__main__":
-    db.initialize_databse()
     run()

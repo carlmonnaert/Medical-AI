@@ -55,7 +55,8 @@
 ## 18/03
 
 - **(Maxence)** : Amélioration de la simulation en essayant de modifier certains paramètres comme le taux moyen d'arrivé en une heure, le nombre de médécin, le temps moyen de consultation.
-- **(Lukas)** :
+- **(Carl)** :
+- **(Lukas)** : Reflexion avec les autres parties du projet sur les données fournies, changement d'api pour le dashboard (Dash).
 - **(Arsene)** : Interface simple avec une db sql terminée (création, insertion, requêtes). Ajout d'une documenation également. Discussion avec les autres membres du groupe pour connaitre leur(s) besoin(s)/avancement en terme de données.
 
 
@@ -63,7 +64,7 @@
 
 Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation qui génére une base de données et que cette data puisse être réutiliser à n'importe quelle moment pour poursuivre la simulation. L'objectif à long terme est de "stopper" la simulation. Modifier la base de données pour modéliser un événement et voir comment notre simulation réagit à ce changement. 
 - **(Maxence, Carl)** : Aujourd'hui, nous avons finalisé la simulation rapide que nous avions envisagé (Simulation_Rapide_2). Tout marche bien, mais certaines modifications devront être fait. On va pouvoir tester si la simulation et le travail de Arsene sur la base de données marchent bien ensemble. Pour la prochaine fois, il faudra perfectionner la gestion des médécins et comprendre pourquoi lorsque nos paramètres sont trop élévés, le proccesus de file d'attente ne fonctionne plus.
-- **(Lukas)** :
+- **(Lukas)** : Lecture de la documentation de l'api Dash et premiers tests
 - **(Arsene)** : Implémentation de l'interface spécifique à la base de données de l'hôpital.
 
 
@@ -74,14 +75,14 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 - **(Maxence)** : J'ai rajouté à la simulation de Carl plusieurs maladies et plusieurs spécialités par médécins. Je me suis concentré aussi sur l'explication de chaque ligne de code (Simulation_Plusiseurs_Médecins dans la V2) pour que Arsene et Lukas comprennent plus facilement la structure et puisse implémenter leurs parties.
 - **(Carl)** :
-- **(Lukas)** :
+- **(Lukas)** : Premier dashboard fonctionnel, decision avec mes pairs de stocker les données sous la forme d'un fichier csv.
 - **(Arsene)** : Ajout d'une fonction de sauvegarde des données de la simulation, permettant par la suite l'affichage de différentes statistiques de la simulation.
 
 ## 16/04
 
 - **(Maxence)** :
 - **(Carl)** :
-- **(Lukas)** :
+- **(Lukas)** : 
 - **(Arsene)** :
 
 ## 17/04

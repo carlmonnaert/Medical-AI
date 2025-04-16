@@ -167,15 +167,16 @@ class Hopital:
                 temps_de_traitement, self.dt, maladie, specialite_requise
             )
             
-            patient_id = f"P{self.patients_totaux}"
-            arrival_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Dans la méthode arrivee_patients(), remplacez la ligne db.insert_patient() par:
+            id_patient = f"P{self.patients_totaux}"
+            heure_arrivee = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             db.insert_patient(
-                patient_id, 
-                arrival_time, 
+                id_patient, 
+                heure_arrivee, 
                 0, 
                 None, 
                 None, 
-                "waiting",
+                "en_attente",
                 maladie,
                 specialite_requise
             )
@@ -384,6 +385,4 @@ def run():
 
 
 if __name__ == "__main__":
-    # Ligne commentée pour résoudre l'erreur
-    # db.initialize_databse()
     run()

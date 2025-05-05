@@ -91,7 +91,7 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 ## 05/05
 
 
-- **(Maxence)** : 
+- **(Maxence)** : Mise en place des lignes directrices de groupe pour finaliser le projet. 
 - **(Carl)** : Brainstorming et début de rédaction du rapport sur les impacts environementaux et sociaux de notre projet
 - **(Lukas)** : Réglage des bugs du dashboard suite a la mise en commun des différentes parties (notemment le bon formatage des données)
 - **(Arsene)** : Découverte de l'api InfluxDB pour le stockage de séries temporelles.

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import time
 import sys, os, csv
 import random
-import db
+
 
 # Liste des maladies avec leur temps de traitement et spécialiste requis
 Maladies = [
@@ -170,16 +170,6 @@ class Hopital:
             # Dans la méthode arrivee_patients(), remplacez la ligne db.insert_patient() par:
             id_patient = f"P{self.patients_totaux}"
             heure_arrivee = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            db.insert_patient(
-                id_patient, 
-                heure_arrivee, 
-                0, 
-                None, 
-                None, 
-                "en_attente",
-                maladie,
-                specialite_requise
-            )
             self.patients_totaux += 1
 
             # Attribution du patient à un médecin de la bonne spécialité

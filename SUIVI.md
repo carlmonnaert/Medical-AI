@@ -103,7 +103,7 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 ## 12/05 :
 
-- **(Maxence)** : J'ai transformé notre simulation qui se faisait évolue que sur une journée en une simulation qui se fait maintenant sur plusieurs mois, voir années( fichier : ). Cela permet de mettre en évidence les saisonalités des maladies et la gestion des spécialités des médécins selon la période de l'année (ie plus de pneumologue en hiver). 
+- **(Maxence)** : J'ai transformé notre simulation qui se faisait évolue que sur une journée en une simulation qui se fait maintenant sur plusieurs mois, voir années( fichier dans le dossier V3 : Simulation_Mois_par_Mois.py). Cela permet de mettre en évidence les saisonalités des maladies et la gestion des spécialités des médécins selon la période de l'année (ie plus de pneumologue en hiver). 
 
 
 

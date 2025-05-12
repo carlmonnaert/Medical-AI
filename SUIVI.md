@@ -84,7 +84,7 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 ## 17/04
 
-**(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé....
+**(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé. Cela a permis de redéfinir les objectifs du projet et notre avancée actuelle. 
 
 
 
@@ -95,3 +95,8 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 - **(Carl)** : Brainstorming et début de rédaction du rapport sur les impacts environementaux et sociaux de notre projet
 - **(Lukas)** : Réglage des bugs du dashboard suite a la mise en commun des différentes parties (notemment le bon formatage des données)
 - **(Arsene)** : Découverte de l'api InfluxDB pour le stockage de séries temporelles.
+
+
+## Asencion : 
+
+**(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé....

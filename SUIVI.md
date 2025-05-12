@@ -99,4 +99,13 @@ Brainstorming  **(Tout le monde)** : On aimerait pouvoir créer une simulation q
 
 ## Asencion : 
 
-**(Tous)** : Nous avons eu un entretien avec notre encadrant Monsieur Clemençon pour parler de notre projet et de notre avancé....
+**(Tous)** : Nous avons chacun perfectionné nos codes. C'est à a dire que la simulation donne une belle base de donnees et que le dashboard répond bien à notre premiere attentes même si la partie ergonomique reste à ameliorer. 
+
+## 12/05 :
+
+- **(Maxence)** : J'ai transformé notre simulation qui se faisait évolue que sur une journée en une simulation qui se fait maintenant sur plusieurs mois, voir années( fichier : ). Cela permet de mettre en évidence les saisonalités des maladies et la gestion des spécialités des médécins selon la période de l'année (ie plus de pneumologue en hiver). 
+
+
+
+
+

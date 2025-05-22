@@ -82,13 +82,13 @@ def plot_timeline():
     
     # Query for this specific simulation
     df = pd.read_sql_query(
-        'SELECT sim_time, patients_total, patients_treated, busy_doctors, waiting_patients FROM hospital_state WHERE sim_id = ? ORDER BY sim_minutes',
+        'SELECT sim_time, patients_total, patients_treated, busy_doctors, waiting_patients FROM hospital_state WHERE sim_id = ? ORDER BY sim_time',
         conn, params=(sim_id,)
     )
     conn.close()
     
     if df.empty:
-        return jsonify({'error': 'No data available'})
+        return jsonify({'error': 'No data available for timeline plot'})
     
     # Convert ISO datetime strings to datetime objects for proper plotting
     df['sim_time'] = pd.to_datetime(df['sim_time'])
@@ -99,9 +99,10 @@ def plot_timeline():
     fig.add_trace(go.Scatter(x=df['sim_time'], y=df['busy_doctors'], mode='lines', name='Busy Doctors'))
     fig.add_trace(go.Scatter(x=df['sim_time'], y=df['waiting_patients'], mode='lines', name='Waiting Patients'))
     
+    # Add layout and styling
     fig.update_layout(
-        title='Hospital Activity Over Time', 
-        xaxis_title='Date and Time',
+        title='Hospital State Timeline',
+        xaxis_title='Simulation Time',
         yaxis_title='Count',
         template='plotly_white',
         legend=dict(
@@ -110,9 +111,12 @@ def plot_timeline():
             y=1.02,
             xanchor="right",
             x=1
+        ),
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12
         )
     )
-    fig.update_xaxes(tickformat="%Y-%m-%d %H:%M")
     
     return jsonify({
         'plot': json.loads(fig.to_json())

@@ -36,6 +36,8 @@ class HospitalSim:
         patients_treated (int): Total patients treated
         start_date (datetime): Simulation start date
         doctors (List[Doctor]): List of doctors in the hospital
+        active_events (Dict[str, Dict]): Dictionary of active special events affecting the simulation
+        parameter_changes (List[Dict]): List of parameter changes that occurred during simulation
     """
     
     def __init__(self, env: simpy.Environment, num_doctors: int = DEFAULT_NUM_DOCTORS, 
@@ -59,6 +61,10 @@ class HospitalSim:
         self.patients_total = 0
         self.patients_treated = 0
         self.start_date = SIM_START_DATE
+        
+        # Initialize events and parameter changes tracking
+        self.active_events = {}
+        self.parameter_changes = []
         
         # Create or get simulation ID
         from src.data.db import create_new_simulation, get_latest_simulation_id
@@ -269,8 +275,12 @@ class HospitalSim:
                     special_factor = special_date["factor"]
                     break
             
+            # Check and apply effects from active events (epidemics, disasters, etc.)
+            event_factors = self.check_and_apply_events()
+            event_arrival_factor = event_factors['arrival_rate']
+            
             # Calculate effective arrival rate with all factors
-            effective_rate = self.arrival_rate * time_factor * day_factor * month_factor * special_factor
+            effective_rate = self.arrival_rate * time_factor * day_factor * month_factor * special_factor * event_arrival_factor
             
             # Hospital might be on diversion if extremely busy (over 90% capacity)
             busy_doctors = sum(1 for d in self.doctors if d.resource.count > 0)
@@ -286,8 +296,27 @@ class HospitalSim:
             
             # Get seasonal disease distribution
             seasonal_weights = self.get_seasonal_weights(self.env.now)
+            
+            # Apply event-specific disease weight modifications
+            event_disease_weights = event_factors['disease_weights']
+            if event_disease_weights:
+                # Make a copy of the weights to modify
+                modified_weights = seasonal_weights.copy()
+                
+                # Apply multipliers for specific diseases
+                for i, disease_info in enumerate(DISEASES):
+                    disease_name = disease_info[0]
+                    if disease_name in event_disease_weights:
+                        modified_weights[i] = int(modified_weights[i] * event_disease_weights[disease_name])
+                
+                # Use the modified weights
+                seasonal_weights = modified_weights
+            
             disease, mean_time, specialty = random.choices(DISEASES, weights=seasonal_weights, k=1)[0]
-            treatment_time = max(1, int(np.random.exponential(mean_time)))
+            
+            # Modify treatment time based on events (e.g., more complex cases during epidemics)
+            treatment_time_factor = event_factors.get('treatment_time', 1.0)
+            treatment_time = max(1, int(np.random.exponential(mean_time * treatment_time_factor)))
             
             patient = Patient(
                 id=f"P{self.patients_total}",
@@ -464,3 +493,256 @@ class HospitalSim:
             print(f"Simulation state saved at minute {self.env.now}")
         except Exception as e:
             print(f"Error saving simulation state: {e}")
+
+    def add_event(self, event_type: str, params: Dict[str, Any], duration_minutes: int = 1440) -> bool:
+        """Add a special event to the simulation (e.g., epidemic, disaster).
+        
+        Args:
+            event_type: Type of event (e.g., 'epidemic', 'disaster', 'weather')
+            params: Parameters specific to the event type
+            duration_minutes: How long the event should last, in simulation minutes
+        
+        Returns:
+            bool: True if the event was successfully added
+        """
+        try:
+            event_id = f"{event_type}_{len(self.active_events) + 1}"
+            
+            # Set expiration time
+            expiration_time = self.env.now + duration_minutes
+            
+            # Store event details
+            self.active_events[event_id] = {
+                'type': event_type,
+                'params': params,
+                'start_time': self.env.now,
+                'expiration_time': expiration_time,
+                'start_date': (self.start_date + timedelta(minutes=self.env.now)).isoformat(),
+                'end_date': (self.start_date + timedelta(minutes=expiration_time)).isoformat()
+            }
+            
+            # Log the event to database
+            self._log_event(event_id, event_type, params, duration_minutes)
+            
+            print(f"Event {event_id} of type {event_type} added, duration: {duration_minutes} minutes")
+            return True
+        except Exception as e:
+            print(f"Error adding event: {e}")
+            return False
+    
+    def update_parameters(self, params: Dict[str, Any]) -> bool:
+        """Update simulation parameters during the run.
+        
+        Args:
+            params: Dictionary of parameters to update
+                - 'arrival_rate': New patient arrival rate
+                - 'num_doctors': New doctor count (will add/remove doctors)
+                - 'disease_factor': Dictionary mapping disease names to multipliers
+        
+        Returns:
+            bool: True if parameters were successfully updated
+        """
+        try:
+            # Record the change
+            change = {
+                'timestamp': self.env.now,
+                'sim_date': (self.start_date + timedelta(minutes=self.env.now)).isoformat(),
+                'old_values': {},
+                'new_values': {}
+            }
+            
+            # Update arrival rate if provided
+            if 'arrival_rate' in params:
+                change['old_values']['arrival_rate'] = self.arrival_rate
+                self.arrival_rate = params['arrival_rate']
+                change['new_values']['arrival_rate'] = self.arrival_rate
+            
+            # Update doctor count if provided
+            if 'num_doctors' in params:
+                change['old_values']['num_doctors'] = len(self.doctors)
+                # Adjust doctor count
+                self._adjust_doctor_count(params['num_doctors'])
+                change['new_values']['num_doctors'] = len(self.doctors)
+            
+            # Store the parameter change
+            self.parameter_changes.append(change)
+            
+            # Log the parameter change to database
+            self._log_parameter_change(change)
+            
+            print(f"Parameters updated at time {self.env.now}: {params}")
+            return True
+        except Exception as e:
+            print(f"Error updating parameters: {e}")
+            return False
+    
+    def _adjust_doctor_count(self, new_count: int) -> None:
+        """Adjust the number of doctors in the simulation.
+        
+        Args:
+            new_count: New total number of doctors
+        """
+        current_count = len(self.doctors)
+        
+        if new_count > current_count:
+            # Add doctors
+            for i in range(current_count + 1, new_count + 1):
+                # Choose a specialty based on current needs
+                spec_counts = {}
+                for doc in self.doctors:
+                    spec_counts[doc.specialty] = spec_counts.get(doc.specialty, 0) + 1
+                
+                # Find specialty with lowest proportion
+                target_specialty = min(
+                    SPECIALTIES, 
+                    key=lambda s: spec_counts.get(s, 0) / max(1, SPECIALTY_PROPORTIONS[s])
+                )
+                
+                new_doctor = Doctor(id=i, specialty=target_specialty, env=self.env)
+                self.doctors.append(new_doctor)
+                
+        elif new_count < current_count:
+            # Remove doctors (only remove those without patients)
+            free_doctors = [d for d in self.doctors if d.resource.count == 0 and not d.queue]
+            
+            # If we don't have enough free doctors, just remove what we can
+            remove_count = min(len(free_doctors), current_count - new_count)
+            
+            # Remove the requested number of doctors
+            for _ in range(remove_count):
+                # Prefer to remove specialists over generalists to maintain core capacity
+                specialists = [d for d in free_doctors if d.specialty != "generalist"]
+                if specialists:
+                    doc_to_remove = specialists[0]
+                else:
+                    doc_to_remove = free_doctors[0]
+                
+                self.doctors.remove(doc_to_remove)
+                free_doctors.remove(doc_to_remove)
+    
+    def _log_event(self, event_id: str, event_type: str, params: Dict[str, Any], duration_minutes: int) -> None:
+        """Log an event to the database.
+        
+        Args:
+            event_id: Unique identifier for the event
+            event_type: Type of event
+            params: Event parameters
+            duration_minutes: Duration of the event in minutes
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Convert simulation time to actual date
+            current_sim_date = self.start_date + timedelta(minutes=self.env.now)
+            end_sim_date = current_sim_date + timedelta(minutes=duration_minutes)
+            
+            cursor.execute('''
+            INSERT INTO simulation_events 
+            (sim_id, event_id, event_type, params, start_time, end_time, start_sim_minutes, end_sim_minutes, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                self.sim_id,
+                event_id,
+                event_type,
+                json.dumps(params),
+                current_sim_date.isoformat(),
+                end_sim_date.isoformat(),
+                self.env.now,
+                self.env.now + duration_minutes,
+                datetime.now().isoformat()
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging event: {e}")
+    
+    def _log_parameter_change(self, change: Dict[str, Any]) -> None:
+        """Log a parameter change to the database.
+        
+        Args:
+            change: Dictionary with change details
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+            INSERT INTO parameter_changes 
+            (sim_id, sim_time, sim_minutes, old_values, new_values, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                self.sim_id,
+                change['sim_date'],
+                change['timestamp'],
+                json.dumps(change['old_values']),
+                json.dumps(change['new_values']),
+                datetime.now().isoformat()
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging parameter change: {e}")
+    
+    def check_and_apply_events(self) -> None:
+        """Check for active events and apply their effects.
+        
+        This method is called during patient arrivals to modify 
+        parameters based on active events.
+        
+        Returns:
+            Dict[str, float]: Factors to apply to the simulation
+        """
+        # Initialize default factors
+        factors = {
+            'arrival_rate': 1.0,
+            'disease_weights': {},
+            'treatment_time': 1.0
+        }
+        
+        # Check for expired events
+        expired_events = []
+        for event_id, event in self.active_events.items():
+            if self.env.now >= event['expiration_time']:
+                expired_events.append(event_id)
+                print(f"Event {event_id} of type {event['type']} has expired")
+        
+        # Remove expired events
+        for event_id in expired_events:
+            del self.active_events[event_id]
+        
+        # Apply effects of active events
+        for event_id, event in self.active_events.items():
+            if event['type'] == 'epidemic':
+                # Epidemic increases arrivals and specific disease prevalence
+                factors['arrival_rate'] *= event['params'].get('arrival_factor', 1.5)
+                
+                # Increase specific disease weights
+                target_disease = event['params'].get('disease', 'viral_infection')
+                factors['disease_weights'][target_disease] = event['params'].get('disease_factor', 3.0)
+                
+                # Potentially increase treatment time
+                factors['treatment_time'] *= event['params'].get('treatment_time_factor', 1.2)
+                
+            elif event['type'] == 'disaster':
+                # Disaster causes a spike in emergency cases
+                factors['arrival_rate'] *= event['params'].get('arrival_factor', 2.0)
+                
+                # Increase trauma cases
+                factors['disease_weights']['minor_fracture'] = event['params'].get('fracture_factor', 4.0)
+                factors['disease_weights']['major_trauma'] = event['params'].get('trauma_factor', 5.0)
+                
+            elif event['type'] == 'weather':
+                # Weather affects specific conditions
+                weather_type = event['params'].get('weather_type', 'storm')
+                
+                if weather_type == 'cold':
+                    factors['disease_weights']['viral_infection'] = 2.0
+                    factors['disease_weights']['pneumonia'] = 1.8
+                elif weather_type == 'heat':
+                    factors['disease_weights']['dehydration'] = 2.5
+                    factors['arrival_rate'] *= 1.2
+                elif weather_type == 'storm':
+                    factors['arrival_rate'] *= 0.8  # Fewer people come to hospital during storms
+        
+        return factors

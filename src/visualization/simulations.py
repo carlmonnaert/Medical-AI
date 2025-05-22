@@ -9,6 +9,37 @@ from src.visualization.dashboard import app
 from src.data.db import get_db_connection
 import pandas as pd
 
+# Track active simulation instances
+_active_simulations = {}
+
+def register_simulation(sim_id, sim_instance):
+    """Register an active simulation instance.
+    
+    Args:
+        sim_id: ID of the simulation
+        sim_instance: HospitalSim instance
+    """
+    global _active_simulations
+    _active_simulations[sim_id] = sim_instance
+
+def unregister_simulation(sim_id):
+    """Unregister a simulation instance.
+    
+    Args:
+        sim_id: ID of the simulation to unregister
+    """
+    global _active_simulations
+    if sim_id in _active_simulations:
+        del _active_simulations[sim_id]
+
+def get_active_simulations():
+    """Get all currently active simulation instances.
+    
+    Returns:
+        Dict: Dictionary of active simulation instances keyed by sim_id
+    """
+    return _active_simulations
+
 @app.route('/api/simulations')
 def get_simulations():
     """Get a list of all available simulations.

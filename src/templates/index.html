@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Simulation Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .dashboard-header {
+            background-color: #3498db;
+            color: white;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        .plot-container {
+            height: 400px;
+            width: 100%;
+        }
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stats-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-3">
+        <div class="dashboard-header text-center">
+            <h1>Hospital Simulation Dashboard</h1>
+            <p class="lead">Real-time monitoring and analytics for hospital operations</p>
+            
+            <!-- Simulation Selector -->
+            <div class="row mt-3">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card p-3">
+                        <div class="form-group">
+                            <label for="simulationSelect">Select Simulation:</label>
+                            <select class="form-control" id="simulationSelect">
+                                <option value="">Loading simulations...</option>
+                            </select>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Simulation details: <span id="simulationDetails">-</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats Row -->
+        <div class="row" id="summary-stats">
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="stats-value" id="total-patients">-</div>
+                    <div class="stats-label">Total Patients</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="stats-value" id="treated-patients">-</div>
+                    <div class="stats-label">Treated Patients</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="stats-value" id="busy-doctors">-</div>
+                    <div class="stats-label">Busy Doctors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card text-center">
+                    <div class="stats-value" id="avg-wait">-</div>
+                    <div class="stats-label">Avg Wait Time (min)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4>Hospital Activity Timeline</h4>
+                    <div id="timeline-plot" class="plot-container"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4>Disease Distribution</h4>
+                    <div id="diseases-plot" class="plot-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4>Hourly Patient Pattern</h4>
+                    <div id="hourly-pattern-plot" class="plot-container"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h4>Seasonal Disease Pattern</h4>
+                    <div id="seasonal-pattern-plot" class="plot-container"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Predictions Row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dashboard-card">
+                    <h4>Patient Arrival Predictions</h4>
+                    <div id="predictions-plot" class="plot-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Current simulation ID
+        let currentSimId = null;
+        
+        // Function to load available simulations
+        function loadSimulations() {
+            fetch('/api/simulations')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('simulationSelect');
+                    select.innerHTML = '';
+                    
+                    if (data.simulations && data.simulations.length > 0) {
+                        data.simulations.forEach(sim => {
+                            const option = document.createElement('option');
+                            option.value = sim.id;
+                            option.textContent = `Simulation #${sim.id} - ${sim.description || 'No description'}`;
+                            select.appendChild(option);
+                        });
+                        
+                        // Select the first/latest simulation
+                        currentSimId = data.simulations[0].id;
+                        select.value = currentSimId;
+                        updateSimulationDetails(data.simulations[0]);
+                        
+                        // Load data for this simulation
+                        updateDashboard();
+                    } else {
+                        select.innerHTML = '<option value="">No simulations available</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading simulations:', error);
+                    document.getElementById('simulationSelect').innerHTML = 
+                        '<option value="">Error loading simulations</option>';
+                });
+        }
+        
+        // Update simulation details display
+        function updateSimulationDetails(sim) {
+            const details = document.getElementById('simulationDetails');
+            details.textContent = `${sim.num_doctors} doctors, arrival rate: ${sim.arrival_rate}/hour, ${sim.total_patients} patients, avg wait: ${sim.avg_wait_time.toFixed(1)} mins`;
+        }
+        
+        // Handle simulation selection change
+        document.getElementById('simulationSelect').addEventListener('change', function() {
+            currentSimId = this.value;
+            
+            // Fetch details for this simulation
+            fetch('/api/simulations')
+                .then(response => response.json())
+                .then(data => {
+                    const sim = data.simulations.find(s => s.id == currentSimId);
+                    if (sim) {
+                        updateSimulationDetails(sim);
+                    }
+                })
+                .catch(error => console.error('Error fetching simulation details:', error));
+            
+            // Update dashboard with new simulation data
+            updateDashboard();
+        });
+        
+        // Function to fetch data and update dashboard
+        function updateDashboard() {
+            if (!currentSimId) return;
+            
+            // Fetch summary statistics
+            fetch(`/api/summary?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update summary stats
+                    if (data.latest) {
+                        document.getElementById('total-patients').textContent = data.latest.patients_total || 0;
+                        document.getElementById('treated-patients').textContent = data.latest.patients_treated || 0;
+                        document.getElementById('busy-doctors').textContent = data.latest.busy_doctors || 0;
+                    }
+                    document.getElementById('avg-wait').textContent = data.avg_wait_time?.toFixed(1) || 0;
+                })
+                .catch(error => console.error('Error fetching summary data:', error));
+
+            // Fetch and display each plot
+            fetch(`/api/plot/timeline?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Plotly.react('timeline-plot', data.plot.data, data.plot.layout);
+                })
+                .catch(error => console.error('Error fetching timeline plot:', error));
+
+            fetch(`/api/plot/diseases?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Plotly.react('diseases-plot', data.plot.data, data.plot.layout);
+                })
+                .catch(error => console.error('Error fetching diseases plot:', error));
+
+            fetch(`/api/plot/hourly_pattern?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Plotly.react('hourly-pattern-plot', data.plot.data, data.plot.layout);
+                })
+                .catch(error => console.error('Error fetching hourly pattern plot:', error));
+
+            fetch(`/api/plot/seasonal_pattern?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    Plotly.react('seasonal-pattern-plot', data.plot.data, data.plot.layout);
+                })
+                .catch(error => console.error('Error fetching seasonal pattern plot:', error));
+                
+            fetch(`/api/plot/predictions?sim_id=${currentSimId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.log("No prediction data available");
+                    } else {
+                        Plotly.react('predictions-plot', data.plot.data, data.plot.layout);
+                    }
+                })
+                .catch(error => console.error('Error fetching predictions plot:', error));
+        }
+
+        // Initial load
+        $(document).ready(function() {
+            loadSimulations();
+            
+            // Set interval for regular updates (every 10 seconds)
+            setInterval(updateDashboard, 10000);
+        });
+    </script>
+</body>
+</html>

@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """
 Main entry point for the hospital simulation system.
-
-This script can start the simulation, dashboard, or both in separate processes.
 """
 
 import argparse
 import subprocess
 import sys
-import os
 import time
 from pathlib import Path
 
@@ -17,146 +14,201 @@ project_root = Path(__file__).resolve().parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.data.db import init_database
-from src.config import DASHBOARD_PORT
-
-def run_simulation(args):
-    """Run the hospital simulation with the given arguments."""
-    cmd = [sys.executable, "src/run_simulation.py"]
-    
-    if args.resume:
-        cmd.append("--resume")
-    if args.doctors:
-        cmd.append(f"--doctors={args.doctors}")
-    if args.rate:
-        cmd.append(f"--rate={args.rate}")
-    if args.minutes:
-        cmd.append(f"--minutes={args.minutes}")
-    
-    print(f"Starting simulation: {' '.join(cmd)}")
-    return subprocess.Popen(cmd)
-
-def run_dashboard():
-    """Run the dashboard application."""
-    cmd = [sys.executable, "src/run_dashboard.py"]
-    print(f"Starting dashboard server: {' '.join(cmd)}")
-    print(f"Dashboard will be available at: http://localhost:{DASHBOARD_PORT}")
-    return subprocess.Popen(cmd)
-
-def run_ml(args):
-    """Run the ML training and prediction."""
-    cmd = [sys.executable, "src/run_ml.py"]
-    
-    if args.train:
-        cmd.append("--train")
-    if args.predict:
-        cmd.append("--predict")
-    if args.days:
-        cmd.append(f"--days={args.days}")
-    
-    print(f"Starting ML operations: {' '.join(cmd)}")
-    return subprocess.Popen(cmd)
-
 def main():
     """Main entry point for the hospital simulation system."""
-    parser = argparse.ArgumentParser(description="Hospital Simulation System")
+    # Apply Linux-specific optimizations
+    import sys
+    import os
+    if sys.platform.startswith('linux'):
+        os.environ['PYTHONUNBUFFERED'] = '1'
+        os.environ['PYTHONHASHSEED'] = '0'
+    
+    parser = argparse.ArgumentParser(description="Hospital Simulation System with AI Predictions")
     
     # Mode selection
-    mode_group = parser.add_argument_group("Mode")
-    mode_group.add_argument("--simulation", action="store_true", help="Run the simulation")
-    mode_group.add_argument("--dashboard", action="store_true", help="Run the dashboard")
-    mode_group.add_argument("--ml", action="store_true", help="Run ML operations")
-    mode_group.add_argument("--all", action="store_true", help="Run all components")
+    parser.add_argument("--simulation", action="store_true", help="Run the simulation")
+    parser.add_argument("--dashboard", action="store_true", help="Run the dashboard")
+    parser.add_argument("--ml", action="store_true", help="Run ML operations")
+    parser.add_argument("--all", action="store_true", help="Run all components")
+    parser.add_argument("--docs", action="store_true", help="Generate documentation")
+    
+    # Dashboard options
+    parser.add_argument("--port", type=int, help="Dashboard port (default: 5000)")
+    parser.add_argument("--host", type=str, help="Dashboard host (default: localhost)")
+    parser.add_argument("--debug", action="store_true", help="Run dashboard in debug mode")
     
     # Simulation options
-    sim_group = parser.add_argument_group("Simulation Options")
-    sim_group.add_argument("--resume", action="store_true", help="Resume from last saved state")
-    sim_group.add_argument("--doctors", type=int, help="Number of doctors")
-    sim_group.add_argument("--rate", type=float, help="Patient arrival rate")
-    sim_group.add_argument("--minutes", type=int, help="Simulation duration in minutes")
+    parser.add_argument("--resume", action="store_true", help="Resume from last saved state")
+    parser.add_argument("--sim-id", type=int, help="Specific simulation ID to resume")
+    parser.add_argument("--doctors", type=int, help="Number of doctors")
+    parser.add_argument("--rate", type=float, help="Patient arrival rate")
+    parser.add_argument("--minutes", type=int, help="Simulation duration in minutes")
+    parser.add_argument("--duration", type=int, help="Simulation duration in days")
+    parser.add_argument("--clean", action="store_true", help="Clean database before starting")
     
     # ML options
-    ml_group = parser.add_argument_group("ML Options")
-    ml_group.add_argument("--train", action="store_true", help="Train ML models")
-    ml_group.add_argument("--predict", action="store_true", help="Generate predictions")
-    ml_group.add_argument("--days", type=int, help="Days to predict")
+    parser.add_argument("--train", action="store_true", help="Train ML models")
+    parser.add_argument("--predict", action="store_true", help="Generate predictions")
+    parser.add_argument("--days", type=int, help="Days to predict")
+    parser.add_argument("--list", action="store_true", help="List available simulations")
     
     args = parser.parse_args()
     
-    # Initialize database
-    print("Initializing database...")
-    init_database()
+    # Handle documentation generation
+    if args.docs:
+        cmd = [sys.executable, "src/utils/generate_docs.py"]
+        subprocess.run(cmd)
+        return
     
-    processes = []
+    # Handle dashboard launch
+    if args.dashboard and not args.all:
+        cmd = [sys.executable, "src/run_dashboard.py"]
+        if args.port:
+            import os
+            os.environ['DASHBOARD_PORT'] = str(args.port)
+        if args.host:
+            os.environ['DASHBOARD_HOST'] = args.host
+        if args.debug:
+            os.environ['DASHBOARD_DEBUG'] = '1'
+        subprocess.run(cmd)
+        return
     
-    # Determine what to run
-    run_sim = args.simulation or args.all
-    run_dash = args.dashboard or args.all
-    run_ml_ops = args.ml or args.all
+    # Handle simulation
+    if args.simulation and not args.all:
+        cmd = [sys.executable, "src/run_simulation.py"]
+        if args.resume:
+            cmd.append("--resume")
+        if args.sim_id:
+            cmd.append(f"--sim-id={args.sim_id}")
+        if args.doctors:
+            cmd.append(f"--doctors={args.doctors}")
+        if args.rate:
+            cmd.append(f"--rate={args.rate}")
+        if args.minutes:
+            cmd.append(f"--minutes={args.minutes}")
+        if args.duration:
+            cmd.append(f"--duration={args.duration}")
+        if args.clean:
+            cmd.append("--clean")
+        subprocess.run(cmd)
+        return
     
-    # If no mode specified, use interactive mode
-    if not (run_sim or run_dash or run_ml_ops):
-        print("\nNo mode specified. Starting interactive mode.")
-        print("What would you like to run?")
-        print("1. Simulation")
-        print("2. Dashboard")
-        print("3. ML operations")
-        print("4. All components")
-        print("5. Exit")
+    # Handle ML operations
+    if args.ml and not args.all:
+        cmd = [sys.executable, "src/run_ml.py"]
+        if args.train:
+            cmd.append("--train")
+        if args.predict:
+            if args.sim_id:
+                cmd.append(f"--predict={args.sim_id}")
+            else:
+                cmd.append("--predict=1")  # Default to simulation 1
+        if args.list:
+            cmd.append("--list")
+        if args.days:
+            cmd.append(f"--days={args.days}")
+        subprocess.run(cmd)
+        return
+    
+    # Handle running all components
+    if args.all:
+        print("Starting all components...")
+        print("=" * 60)
         
-        choice = input("\nEnter your choice (1-5): ")
+        # Start simulation in background
+        sim_cmd = [sys.executable, "src/run_simulation.py"]
+        if args.doctors:
+            sim_cmd.append(f"--doctors={args.doctors}")
+        if args.rate:
+            sim_cmd.append(f"--rate={args.rate}")
+        if args.duration:
+            sim_cmd.append(f"--duration={args.duration}")
         
-        if choice == "1":
-            run_sim = True
-        elif choice == "2":
-            run_dash = True
-        elif choice == "3":
-            run_ml_ops = True
-        elif choice == "4":
-            run_sim = True
-            run_dash = True
-            run_ml_ops = True
-        else:
-            print("Exiting.")
-            return
+        print("1. Starting simulation...")
+        sim_proc = subprocess.Popen(sim_cmd)
+        time.sleep(3)  # Give simulation time to start
+        
+        # Start ML training in background
+        print("2. Training ML models...")
+        ml_proc = subprocess.Popen([sys.executable, "src/run_ml.py", "--train"])
+        time.sleep(2)
+        
+        # Start dashboard
+        print("3. Starting dashboard...")
+        dash_cmd = [sys.executable, "src/run_dashboard.py"]
+        if args.port:
+            import os
+            os.environ['DASHBOARD_PORT'] = str(args.port)
+        
+        try:
+            subprocess.run(dash_cmd)
+        except KeyboardInterrupt:
+            print("\nShutting down all components...")
+            sim_proc.terminate()
+            ml_proc.terminate()
+        return
     
-    # Start components
+    # If no options specified, show help and interactive mode
+    print("Hospital Simulation & AI Prediction System")
+    print("=" * 60)
+    print("Comprehensive hospital simulation with machine learning predictions")
+    print()
+    print("Usage examples:")
+    print("  python main.py --dashboard")
+    print("  python main.py --simulation --doctors=30 --rate=20")
+    print("  python main.py --ml --train")
+    print("  python main.py --ml --predict --sim-id=1")
+    print("  python main.py --all --doctors=25 --rate=15")
+    print()
+    print("For detailed help: python main.py --help")
+    print()
+    
+    # Interactive mode
+    print("Interactive Mode")
+    print("What would you like to run?")
+    print("1. Simulation only")
+    print("2. Dashboard only") 
+    print("3. ML operations only")
+    print("4. All components")
+    print("5. Generate documentation")
+    print("6. Exit")
+    
     try:
-        if run_sim:
-            sim_process = run_simulation(args)
-            processes.append(sim_process)
-        
-        if run_dash:
-            # Give the simulation a moment to start if running both
-            if run_sim:
-                time.sleep(2)
-            dash_process = run_dashboard()
-            processes.append(dash_process)
-        
-        if run_ml_ops:
-            # If not explicitly set, default to both train and predict
-            if not (args.train or args.predict):
-                args.train = True
-                args.predict = True
-            
-            ml_process = run_ml(args)
-            processes.append(ml_process)
-        
-        # Wait for all processes to complete
-        for process in processes:
-            process.wait()
-            
+        choice = input("\nEnter your choice (1-6): ").strip()
     except KeyboardInterrupt:
-        print("\nInterrupted by user. Shutting down...")
-        for process in processes:
-            process.terminate()
-    finally:
-        # Make sure all processes are terminated
-        for process in processes:
-            try:
-                process.terminate()
-            except:
-                pass
+        print("\nExiting.")
+        return
+    
+    if choice == "1":
+        cmd = [sys.executable, "src/run_simulation.py"]
+        subprocess.run(cmd)
+    elif choice == "2":
+        cmd = [sys.executable, "src/run_dashboard.py"]
+        subprocess.run(cmd)
+    elif choice == "3":
+        cmd = [sys.executable, "src/run_ml.py", "--train", "--predict=1"]
+        subprocess.run(cmd)
+    elif choice == "4":
+        print("\nStarting all components...")
+        # Start simulation in background
+        sim_proc = subprocess.Popen([sys.executable, "src/run_simulation.py"])
+        time.sleep(2)  # Give simulation time to start
+        # Start dashboard
+        dash_proc = subprocess.Popen([sys.executable, "src/run_dashboard.py"])
+        try:
+            # Wait for processes
+            sim_proc.wait()
+            dash_proc.wait()
+        except KeyboardInterrupt:
+            print("\nShutting down...")
+            sim_proc.terminate()
+            dash_proc.terminate()
+    elif choice == "5":
+        cmd = [sys.executable, "src/utils/generate_docs.py"]
+        subprocess.run(cmd)
+    else:
+        print("Goodbye!")
+
 
 if __name__ == "__main__":
     main()

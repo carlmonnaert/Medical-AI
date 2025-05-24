@@ -8,15 +8,22 @@ cd "$(dirname "$0")"
 export PYTHONPATH=$PWD:$PYTHONPATH
 
 # Run the documentation generator
-python fix_docs_path.py
+python src/utils/generate_docs.py
 
-# Open the documentation in the default browser (if available)
-if command -v open >/dev/null 2>&1; then
-    echo "Opening documentation in browser..."
-    open docs/build/html/index.html
-elif command -v xdg-open >/dev/null 2>&1; then
-    echo "Opening documentation in browser..."
-    xdg-open docs/build/html/index.html
+# Check if documentation was generated successfully
+if [ $? -eq 0 ]; then
+    echo "Documentation generated successfully!"
+    
+    # Open the documentation in the default browser (if available)
+    if command -v open >/dev/null 2>&1; then
+        echo "Opening documentation in browser..."
+        open docs/build/html/index.html
+    elif command -v xdg-open >/dev/null 2>&1; then
+        echo "Opening documentation in browser..."
+        xdg-open docs/build/html/index.html
+    else
+        echo "Open docs/build/html/index.html in your browser to view the documentation."
+    fi
 else
-    echo "Documentation generated. Open docs/build/html/index.html in your browser to view."
+    echo "Documentation generation failed. Check the error messages above."
 fi

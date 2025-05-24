@@ -6,7 +6,7 @@ This module provides functions for database initialization and access.
 
 import sqlite3
 import json
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 from src.config import DB_PATH
@@ -75,6 +75,53 @@ def init_database() -> None:
         patients_total INTEGER,
         patients_treated INTEGER,
         active_doctors TEXT,
+        timestamp TEXT,
+        FOREIGN KEY (sim_id) REFERENCES simulations (id)
+    )
+    ''')
+    
+    # Create a table for simulation events (patient flow, doctor assignments, etc.)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS simulation_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sim_id INTEGER,
+        event_id TEXT,
+        event_type TEXT,
+        params TEXT,
+        start_time TEXT,
+        end_time TEXT,
+        start_sim_minutes REAL,
+        end_sim_minutes REAL,
+        timestamp TEXT,
+        FOREIGN KEY (sim_id) REFERENCES simulations (id)
+    )
+    ''')
+    
+    # Create a table for parameter changes during simulation
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS parameter_changes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sim_id INTEGER,
+        sim_time TEXT,
+        sim_minutes REAL,
+        old_values TEXT,
+        new_values TEXT,
+        timestamp TEXT,
+        FOREIGN KEY (sim_id) REFERENCES simulations (id)
+    )
+    ''')
+    
+    # Create a table for detailed simulation events (arrivals, treatments, etc.)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS detailed_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sim_id INTEGER,
+        event_type TEXT,
+        patient_id TEXT,
+        doctor_id INTEGER,
+        event_time TEXT,
+        sim_minutes REAL,
+        details TEXT,
         timestamp TEXT,
         FOREIGN KEY (sim_id) REFERENCES simulations (id)
     )
@@ -153,3 +200,67 @@ def get_latest_simulation_id() -> Optional[int]:
     if result:
         return result['id']
     return None
+
+def get_all_simulation_ids() -> List[Dict[str, Any]]:
+    """Get all simulation IDs and their basic information.
+    
+    Returns:
+        List[Dict]: List of dictionaries containing simulation info
+    """
+    conn = get_db_connection()
+    result = conn.execute("""
+        SELECT id, start_time, num_doctors, arrival_rate, description 
+        FROM simulations 
+        ORDER BY id DESC
+    """).fetchall()
+    conn.close()
+    
+    simulations = []
+    for row in result:
+        simulations.append({
+            'id': row['id'],
+            'start_time': row['start_time'],
+            'num_doctors': row['num_doctors'],
+            'arrival_rate': row['arrival_rate'],
+            'description': row['description']
+        })
+    
+    return simulations
+
+def get_simulation_by_id(sim_id: int) -> Optional[Dict[str, Any]]:
+    """Get simulation information by ID.
+    
+    Args:
+        sim_id: Simulation ID to look up
+        
+    Returns:
+        Dict containing simulation info, or None if not found
+    """
+    conn = get_db_connection()
+    result = conn.execute("""
+        SELECT * FROM simulations WHERE id = ?
+    """, (sim_id,)).fetchone()
+    conn.close()
+    
+    if result:
+        return dict(result)
+    return None
+
+def optimize_database_performance():
+    """Apply SQLite performance optimizations for better Linux performance."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Enable WAL mode for better concurrent access
+    cursor.execute("PRAGMA journal_mode=WAL")
+    # Increase cache size (10MB cache)
+    cursor.execute("PRAGMA cache_size=10000")
+    # Reduce synchronization for speed
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    # Memory temp store
+    cursor.execute("PRAGMA temp_store=MEMORY")
+    # Increase page size for better I/O
+    cursor.execute("PRAGMA page_size=4096")
+    
+    conn.commit()
+    conn.close()

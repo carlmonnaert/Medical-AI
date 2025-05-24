@@ -33,19 +33,8 @@ def main() -> None:
     # Parse command line arguments
     resume = "--resume" in sys.argv
     clean = "--clean" in sys.argv
-    
-    # Clean database if requested
-    if clean:
-        if os.path.exists(DB_PATH):
-            try:
-                print("Cleaning previous simulation data...")
-                os.remove(DB_PATH)
-                print("Database cleaned.")
-            except Exception as e:
-                print(f"Error cleaning database: {e}")
-    
-    # Initialize the database
-    init_database()
+    resume_sim_id = None
+    additional_minutes = None
     
     # Get custom parameters if provided
     num_doctors = DEFAULT_NUM_DOCTORS
@@ -66,22 +55,88 @@ def main() -> None:
                 print(f"Invalid arrival rate value: {arg}")
         elif arg.startswith("--minutes="):
             try:
-                sim_minutes = int(arg.split("=")[1])
+                minutes_value = int(arg.split("=")[1])
+                if resume:
+                    additional_minutes = minutes_value
+                else:
+                    sim_minutes = minutes_value
             except:
                 print(f"Invalid minutes value: {arg}")
+        elif arg.startswith("--sim-id="):
+            try:
+                resume_sim_id = int(arg.split("=")[1])
+                resume = True  # Enable resume if sim_id is provided
+            except:
+                print(f"Invalid simulation ID value: {arg}")
+    
+    # Clean database if requested
+    if clean:
+        if os.path.exists(DB_PATH):
+            try:
+                print("Cleaning previous simulation data...")
+                os.remove(DB_PATH)
+                print("Database cleaned.")
+            except Exception as e:
+                print(f"Error cleaning database: {e}")
+    
+    # Initialize the database
+    init_database()
+    
+    # If resuming, show available simulations if no ID specified
+    if resume and resume_sim_id is None:
+        from src.data.db import get_all_simulation_ids
+        simulations = get_all_simulation_ids()
+        if simulations:
+            print("Available simulations:")
+            print("ID | Start Time           | Doctors | Arrival Rate | Description")
+            print("---|---------------------|---------|--------------|-------------")
+            for sim_info in simulations[:10]:  # Show last 10
+                print(f"{sim_info['id']:2d} | {sim_info['start_time'][:19]} | {sim_info['num_doctors']:7d} | {sim_info['arrival_rate']:12.1f} | {sim_info['description']}")
+            print(f"Will resume latest simulation (ID: {simulations[0]['id']})")
+        else:
+            print("No previous simulations found. Starting new simulation.")
+            resume = False
     
     # Initialize simulation
     env = simpy.Environment()
-    sim = HospitalSim(env, num_doctors=num_doctors, arrival_rate=arrival_rate, resume=resume)
+    sim = HospitalSim(env, num_doctors=num_doctors, arrival_rate=arrival_rate, 
+                      resume=resume, resume_sim_id=resume_sim_id)
     stop_flag = [False]
+    
+    # Calculate target time for progress display
+    if resume:
+        if additional_minutes is not None:
+            target_time = sim.env.now + additional_minutes
+            progress_total = additional_minutes
+            progress_offset = sim.env.now
+        else:
+            target_time = 525600  # 1 year
+            progress_total = 525600
+            progress_offset = 0
+    else:
+        target_time = sim_minutes
+        progress_total = sim_minutes
+        progress_offset = 0
     
     # Set up a progress display thread
     def timer():
         while not stop_flag[0]:
             current_date = sim.start_date + timedelta(minutes=sim.env.now)
             date_str = current_date.strftime("%Y-%m-%d %H:%M")
-            percentage = (sim.env.now / sim_minutes) * 100
-            sys.stdout.write(f"\rSimulation date: {date_str} [{int(sim.env.now)}/{sim_minutes} minutes - {percentage:.1f}%]")
+            
+            if resume and additional_minutes is not None:
+                # Show progress for additional minutes
+                progress = ((sim.env.now - progress_offset) / progress_total) * 100
+                sys.stdout.write(f"\rSimulation date: {date_str} [{int(sim.env.now - progress_offset)}/{additional_minutes} additional minutes - {progress:.1f}%]")
+            elif resume:
+                # Show progress toward 1 year
+                percentage = (sim.env.now / 525600) * 100
+                sys.stdout.write(f"\rSimulation date: {date_str} [{int(sim.env.now)}/525600 minutes - {percentage:.1f}%]")
+            else:
+                # Show progress for new simulation
+                percentage = (sim.env.now / sim_minutes) * 100
+                sys.stdout.write(f"\rSimulation date: {date_str} [{int(sim.env.now)}/{sim_minutes} minutes - {percentage:.1f}%]")
+            
             sys.stdout.flush()
             pytime.sleep(0.2)
         print("\nSimulation complete.")
@@ -107,10 +162,25 @@ def main() -> None:
     # This allows the main thread to remain responsive to signals
     def run_simulation():
         try:
-            sim.run(sim_minutes=sim_minutes)
+            # Use the new run method with proper parameter handling
+            if resume and additional_minutes is not None:
+                # Resume with additional minutes
+                print(f"Running simulation for {additional_minutes} additional minutes from current position")
+                sim.run(additional_minutes=additional_minutes)
+            elif resume:
+                # Resume until 1 year default
+                print(f"Resuming simulation until 1 year mark")
+                sim.run()  # Will use default 1 year and resume logic
+            else:
+                # New simulation
+                print(f"Running new simulation for {sim_minutes} minutes")
+                sim.run(sim_minutes=sim_minutes)
+            
             # Final state save at completion
             if running[0]:  # Only save if not already saved by signal handler
                 sim.save_simulation_state()
+                print(f"\nSimulation completed successfully.")
+                print(f"Final state: {sim.patients_total} total patients, {sim.patients_treated} treated")
         except Exception as e:
             print(f"\nError in simulation: {e}")
         finally:

@@ -41,7 +41,8 @@ class HospitalSim:
     """
     
     def __init__(self, env: simpy.Environment, num_doctors: int = DEFAULT_NUM_DOCTORS, 
-                 arrival_rate: float = DEFAULT_ARRIVAL_RATE, db_path: str = DB_PATH, resume: bool = False):
+                 arrival_rate: float = DEFAULT_ARRIVAL_RATE, db_path: str = DB_PATH, 
+                 resume: bool = False, resume_sim_id: Optional[int] = None):
         """Initialize the hospital simulation.
         
         Args:
@@ -50,12 +51,26 @@ class HospitalSim:
             arrival_rate: Average patient arrivals per hour
             db_path: Path to SQLite database
             resume: Whether to resume from a previously saved state
+            resume_sim_id: Specific simulation ID to resume (if None, uses latest)
         """
         self.env = env
         self.num_doctors = num_doctors
         self.arrival_rate = arrival_rate
         self.db_path = db_path
         self.resume = resume
+        
+        print(f"HospitalSim initializing with {num_doctors} doctors, {arrival_rate}/hr arrival rate")
+        
+        # Apply performance optimizations for Linux
+        import os
+        if os.name == 'posix':  # Linux/Unix systems
+            os.environ['PYTHONUNBUFFERED'] = '1'
+            from src.data.db import optimize_database_performance
+            optimize_database_performance()
+        
+        # Performance optimization - reduce logging frequency
+        self.log_interval = 60  # Log every hour instead of every minute
+        self.batch_size = 50  # Batch database operations
         
         # Default start values
         self.patients_total = 0
@@ -67,24 +82,58 @@ class HospitalSim:
         self.parameter_changes = []
         
         # Create or get simulation ID
-        from src.data.db import create_new_simulation, get_latest_simulation_id
+        from src.data.db import create_new_simulation, get_latest_simulation_id, get_simulation_by_id
         if resume:
-            # Get the latest simulation ID if resuming
-            self.sim_id = get_latest_simulation_id()
-            if self.sim_id is None:
-                print("No previous simulation found. Starting a new simulation.")
-                self.sim_id = create_new_simulation(num_doctors, arrival_rate, "Resumed simulation")
-                self.resume = False
+            # Get the specified simulation ID or the latest one if resuming
+            if resume_sim_id is not None:
+                # Check if the specified simulation exists
+                sim_info = get_simulation_by_id(resume_sim_id)
+                if sim_info is not None:
+                    self.sim_id = resume_sim_id
+                    # Load immutable parameters from database
+                    self.num_doctors = sim_info.get('num_doctors')
+                    self.arrival_rate = sim_info.get('arrival_rate')
+                    print(f"Resuming simulation {resume_sim_id} with database parameters:")
+                    print(f"  {self.num_doctors} doctors, {self.arrival_rate}/hr arrival rate")
+                    if num_doctors != self.num_doctors or abs(arrival_rate - self.arrival_rate) > 0.01:
+                        print(f"  Command line parameters ignored (immutable per simulation)")
+                else:
+                    print(f"Simulation {resume_sim_id} not found. Starting a new simulation.")
+                    self.sim_id = create_new_simulation(num_doctors, arrival_rate, f"New simulation (failed to resume {resume_sim_id})")
+                    self.resume = False
+            else:
+                # Get the latest simulation ID if no specific ID provided
+                latest_sim_id = get_latest_simulation_id()
+                if latest_sim_id is not None:
+                    sim_info = get_simulation_by_id(latest_sim_id)
+                    self.sim_id = latest_sim_id
+                    # Load immutable parameters from database
+                    self.num_doctors = sim_info.get('num_doctors')
+                    self.arrival_rate = sim_info.get('arrival_rate')
+                    print(f"Resuming latest simulation {latest_sim_id} with database parameters:")
+                    print(f"  {self.num_doctors} doctors, {self.arrival_rate}/hr arrival rate")
+                    if num_doctors != self.num_doctors or abs(arrival_rate - self.arrival_rate) > 0.01:
+                        print(f"  Command line parameters ignored (immutable per simulation)")
+                else:
+                    print("No previous simulation found. Starting a new simulation.")
+                    self.sim_id = create_new_simulation(num_doctors, arrival_rate, "New simulation (no previous found)")
+                    self.resume = False
         else:
             # Create a new simulation record
             self.sim_id = create_new_simulation(num_doctors, arrival_rate, "New simulation")
         
         # If resuming, try to load state
-        if resume:
-            self._load_simulation_state()
+        if self.resume:
+            success = self._load_simulation_state()
+            if not success:
+                print("Failed to load simulation state. Starting fresh with same ID.")
+                self.resume = False
         
         # Initialize doctors (will use loaded state if resuming)
         self.doctors = self._init_doctors()
+        
+        # Final verification
+        print(f"✓ HospitalSim ready: {len(self.doctors)} doctors initialized for simulation {self.sim_id}")
 
     def _load_simulation_state(self) -> bool:
         """Load the previous simulation state from the database.
@@ -110,13 +159,19 @@ class HospitalSim:
                 self.patients_total = int(state['patients_total'])
                 self.patients_treated = int(state['patients_treated'])
                 
-                # Set the environment's now time to continue from where we left off
-                self.env.process(self._set_env_time(last_sim_time))
-                
                 # Restore doctor state (will be used in _init_doctors)
                 self.doctor_state = json.loads(state['active_doctors'])
                 
-                print(f"Resumed simulation {self.sim_id} from {self.start_date.isoformat()}, time: {last_sim_time} minutes")
+                # Load active events that are still valid
+                self._load_active_events(last_sim_time)
+                
+                # Set the environment's now time to continue from where we left off
+                # We need to advance the environment time to the saved point
+                if last_sim_time > 0:
+                    # Directly set the environment's internal time
+                    self.env._now = int(last_sim_time)
+                
+                print(f"Resumed simulation {self.sim_id} from {self.start_date.isoformat()}, time: {int(last_sim_time)} minutes")
                 print(f"State: {self.patients_total} total patients, {self.patients_treated} treated")
                 
                 conn.close()
@@ -140,6 +195,40 @@ class HospitalSim:
         """
         yield self.env.timeout(target_time)
 
+    def _load_active_events(self, current_sim_time: float) -> None:
+        """Load active events from the database that are still valid.
+        
+        Args:
+            current_sim_time: Current simulation time in minutes
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # Get all events for this simulation that haven't expired yet
+            events = cursor.execute('''
+                SELECT * FROM simulation_events 
+                WHERE sim_id = ? AND end_sim_minutes > ?
+                ORDER BY start_sim_minutes
+            ''', (self.sim_id, current_sim_time)).fetchall()
+            
+            for event_row in events:
+                event_id = event_row['event_id']
+                self.active_events[event_id] = {
+                    'type': event_row['event_type'],
+                    'params': json.loads(event_row['params']),
+                    'start_time': event_row['start_sim_minutes'],
+                    'expiration_time': event_row['end_sim_minutes'],
+                    'start_date': event_row['start_time'],
+                    'end_date': event_row['end_time']
+                }
+                print(f"Restored active event: {event_id} of type {event_row['event_type']}")
+            
+            conn.close()
+        except Exception as e:
+            print(f"Error loading active events: {e}")
+
     def _init_doctors(self) -> List[Doctor]:
         """Initialize doctors, potentially using loaded state.
         
@@ -157,18 +246,69 @@ class HospitalSim:
                 doctors.append(doctor)
                 id_counter = max(id_counter, doc_data['id'] + 1)
         else:
-            # Regular initialization
-            spec_counts = {s: max(1, int(self.num_doctors * SPECIALTY_PROPORTIONS[s])) for s in SPECIALTIES}
-            # Adjust to reach total
-            while sum(spec_counts.values()) < self.num_doctors:
-                for s in ["generalist", "emergency"]:
-                    if sum(spec_counts.values()) < self.num_doctors:
-                        spec_counts[s] += 1
+            # Regular initialization - ensure we get exactly num_doctors
+            print(f"Initializing exactly {self.num_doctors} doctors...")
+            
+            # Calculate specialty distribution more precisely
+            spec_counts = {}
+            total_proportion = sum(SPECIALTY_PROPORTIONS.values())
+            
+            # First pass: distribute based on proportions
+            for spec in SPECIALTIES:
+                proportion = SPECIALTY_PROPORTIONS[spec] / total_proportion
+                spec_counts[spec] = int(self.num_doctors * proportion)
+            
+            # Second pass: handle rounding to ensure exact total
+            assigned_total = sum(spec_counts.values())
+            remaining = self.num_doctors - assigned_total
+            
+            # Add remaining doctors to specialties with highest fractional parts
+            if remaining > 0:
+                # Calculate fractional parts for each specialty
+                fractional_parts = []
+                for spec in SPECIALTIES:
+                    proportion = SPECIALTY_PROPORTIONS[spec] / total_proportion
+                    expected = self.num_doctors * proportion
+                    fractional = expected - int(expected)
+                    fractional_parts.append((fractional, spec))
+                
+                # Sort by fractional part (highest first) and add doctors
+                fractional_parts.sort(reverse=True)
+                for i in range(remaining):
+                    spec = fractional_parts[i % len(fractional_parts)][1]
+                    spec_counts[spec] += 1
+            
+            # Third pass: remove excess if we somehow went over
+            assigned_total = sum(spec_counts.values())
+            if assigned_total > self.num_doctors:
+                excess = assigned_total - self.num_doctors
+                # Remove from least critical specialties first
+                removal_order = ["pulmonologist", "neurologist", "gynecologist", "cardiologist", "emergency", "generalist"]
+                for spec in removal_order:
+                    if excess > 0 and spec_counts.get(spec, 0) > 1:
+                        reduction = min(excess, spec_counts[spec] - 1)
+                        spec_counts[spec] -= reduction
+                        excess -= reduction
+            
+            # Create doctors according to calculated counts
             for spec, count in spec_counts.items():
                 for _ in range(count):
                     doctors.append(Doctor(id_counter, spec, self.env))
                     id_counter += 1
-                    
+            
+            print(f"Created exactly {len(doctors)} doctors with distribution: {spec_counts}")
+            
+            # Final verification
+            if len(doctors) != self.num_doctors:
+                print(f"ERROR: Expected {self.num_doctors} doctors, but created {len(doctors)}")
+                # Force correct the count as a fallback
+                while len(doctors) < self.num_doctors:
+                    doctors.append(Doctor(id_counter, "generalist", self.env))
+                    id_counter += 1
+                while len(doctors) > self.num_doctors:
+                    doctors.pop()
+                print(f"Corrected to {len(doctors)} doctors")
+                
         return doctors
 
     def get_seasonal_weights(self, sim_time: float) -> List[int]:
@@ -237,15 +377,38 @@ class HospitalSim:
         # Use the hour factors from config
         return HOUR_FACTORS[hour]
 
-    def run(self, sim_minutes: int = 525600) -> None:
+    def run(self, sim_minutes: int = 525600, additional_minutes: Optional[int] = None) -> None:
         """Run the hospital simulation for the specified duration.
         
         Args:
-            sim_minutes: Duration to run the simulation in minutes (default: 1 year)
+            sim_minutes: Total duration for new simulations or default target (1 year = 525600 minutes)
+            additional_minutes: Additional minutes to run from current position (for resumed simulations)
         """
+        # Calculate the target time based on whether we're resuming or starting fresh
+        if self.resume and additional_minutes is not None:
+            # When resuming with --minutes specified: add those minutes to current time
+            target_time = self.env.now + additional_minutes
+            print(f"Resuming simulation {self.sim_id}: running {additional_minutes} additional minutes")
+            print(f"Current time: {int(self.env.now)} minutes -> Target: {int(target_time)} minutes")
+        elif self.resume:
+            # When resuming without --minutes: continue until 1 year total
+            target_time = 525600  # 1 year default
+            remaining_time = max(0, target_time - self.env.now)
+            print(f"Resuming simulation {self.sim_id}: running until 1 year mark")
+            print(f"Current time: {int(self.env.now)} minutes -> Target: {int(target_time)} minutes")
+            print(f"Remaining time to simulate: {int(remaining_time)} minutes")
+            
+            if remaining_time <= 0:
+                print("Simulation has already reached or exceeded 1 year. No additional time to simulate.")
+                return
+        else:
+            # New simulation: run for the specified duration
+            target_time = sim_minutes
+            print(f"Starting new simulation {self.sim_id}: running for {sim_minutes} minutes")
+        
         self.env.process(self.patient_arrivals())
         self.env.process(self.data_collector())
-        self.env.run(until=sim_minutes)
+        self.env.run(until=int(target_time))
 
     def patient_arrivals(self):
         """Generate patient arrivals and assign them to appropriate doctors.
@@ -340,6 +503,13 @@ class HospitalSim:
         Yields:
             simpy.events: SimPy event sequence for patient handling
         """
+        # Log patient arrival
+        self.log_detailed_event("patient_arrival", patient.id, None, {
+            "disease": patient.disease,
+            "specialty_required": patient.specialty,
+            "treatment_time": patient.treatment_time
+        })
+        
         # Find available doctor of required specialty
         candidates = [d for d in self.doctors if d.specialty == patient.specialty]
         if not candidates:
@@ -350,35 +520,55 @@ class HospitalSim:
             doctor = random.choice(free_doctors)
         else:
             doctor = min(candidates, key=lambda d: len(d.queue))
+        
+        # Log doctor assignment
+        self.log_detailed_event("doctor_assigned", patient.id, doctor.id, {
+            "doctor_specialty": doctor.specialty,
+            "queue_length": len(doctor.queue)
+        })
+        
         doctor.queue.append(patient)
         with doctor.resource.request() as req:
             yield req
             doctor.queue.remove(patient)
             patient.start_treatment = self.env.now
+            
+            # Log treatment start
+            self.log_detailed_event("treatment_start", patient.id, doctor.id, {
+                "wait_time": patient.start_treatment - patient.arrival_time
+            })
+            
             yield self.env.timeout(patient.treatment_time)
             patient.end_treatment = self.env.now
             doctor.patients_treated += 1
             self.patients_treated += 1
+            
+            # Log treatment end
+            self.log_detailed_event("treatment_end", patient.id, doctor.id, {
+                "treatment_duration": patient.treatment_time,
+                "total_time": patient.end_treatment - patient.arrival_time
+            })
+            
             self.save_patient_event(patient, doctor)
 
     def data_collector(self):
-        """Periodically save simulation state and hospital metrics.
+        """Periodically save simulation state and hospital metrics with reduced frequency.
         
-        This process runs every minute in simulation time, updating the database
-        with current hospital status and occasionally saving the complete simulation
-        state for possible resumption later.
+        This process runs every hour in simulation time instead of every minute
+        for better performance, updating the database with current hospital status.
         
         Yields:
-            simpy.Timeout: One minute timeout between data collection points
+            simpy.Timeout: One hour timeout between data collection points
         """
         while True:
             self.save_hospital_state()
             
-            # Save simulation state every hour (60 minutes)
-            if int(self.env.now) % 60 == 0 and self.env.now > 0:
+            # Save simulation state every 24 hours instead of every hour
+            if int(self.env.now) % (24 * 60) == 0 and self.env.now > 0:
                 self.save_simulation_state()
                 
-            yield self.env.timeout(1)
+            # Log every hour instead of every minute for performance
+            yield self.env.timeout(self.log_interval)
 
     def save_patient_event(self, patient: Patient, doctor: Doctor) -> None:
         """Save a patient treatment event to the database.
@@ -411,7 +601,7 @@ class HospitalSim:
                 arrival_date.isoformat(),
                 start_treatment_date.isoformat(),
                 end_treatment_date.isoformat(),
-                patient.end_treatment,  # Store original sim minutes too
+                int(patient.end_treatment),  # Store original sim minutes too
                 datetime.now().isoformat()
             ))
             conn.commit()
@@ -445,7 +635,7 @@ class HospitalSim:
                 busy_doctors,
                 waiting_patients,
                 current_sim_date.isoformat(),
-                self.env.now,
+                int(self.env.now),
                 datetime.now().isoformat()
             ))
             conn.commit()
@@ -482,7 +672,7 @@ class HospitalSim:
             ''', (
                 self.sim_id,
                 self.start_date.isoformat(),
-                self.env.now,
+                int(self.env.now),
                 self.patients_total,
                 self.patients_treated,
                 json.dumps(doctor_state),
@@ -535,9 +725,10 @@ class HospitalSim:
         
         Args:
             params: Dictionary of parameters to update
-                - 'arrival_rate': New patient arrival rate
-                - 'num_doctors': New doctor count (will add/remove doctors)
+                - 'arrival_rate': New patient arrival rate (only for new simulations)
                 - 'disease_factor': Dictionary mapping disease names to multipliers
+        
+        Note: num_doctors and arrival_rate are immutable once a simulation is created
         
         Returns:
             bool: True if parameters were successfully updated
@@ -551,18 +742,23 @@ class HospitalSim:
                 'new_values': {}
             }
             
-            # Update arrival rate if provided
+            # Check for immutable parameters
             if 'arrival_rate' in params:
-                change['old_values']['arrival_rate'] = self.arrival_rate
-                self.arrival_rate = params['arrival_rate']
-                change['new_values']['arrival_rate'] = self.arrival_rate
+                print(f"WARNING: arrival_rate is immutable per simulation. Ignoring update.")
             
-            # Update doctor count if provided
             if 'num_doctors' in params:
-                change['old_values']['num_doctors'] = len(self.doctors)
-                # Adjust doctor count
-                self._adjust_doctor_count(params['num_doctors'])
-                change['new_values']['num_doctors'] = len(self.doctors)
+                print(f"WARNING: num_doctors is immutable per simulation. Ignoring update.")
+            
+            # Only allow non-structural parameter changes
+            valid_updates = False
+            if 'disease_factor' in params:
+                change['old_values']['disease_factor'] = {}  # Could track current factors
+                change['new_values']['disease_factor'] = params['disease_factor']
+                valid_updates = True
+            
+            if not valid_updates:
+                print("No valid parameter updates provided.")
+                return False
             
             # Store the parameter change
             self.parameter_changes.append(change)
@@ -575,50 +771,7 @@ class HospitalSim:
         except Exception as e:
             print(f"Error updating parameters: {e}")
             return False
-    
-    def _adjust_doctor_count(self, new_count: int) -> None:
-        """Adjust the number of doctors in the simulation.
-        
-        Args:
-            new_count: New total number of doctors
-        """
-        current_count = len(self.doctors)
-        
-        if new_count > current_count:
-            # Add doctors
-            for i in range(current_count + 1, new_count + 1):
-                # Choose a specialty based on current needs
-                spec_counts = {}
-                for doc in self.doctors:
-                    spec_counts[doc.specialty] = spec_counts.get(doc.specialty, 0) + 1
-                
-                # Find specialty with lowest proportion
-                target_specialty = min(
-                    SPECIALTIES, 
-                    key=lambda s: spec_counts.get(s, 0) / max(1, SPECIALTY_PROPORTIONS[s])
-                )
-                
-                new_doctor = Doctor(id=i, specialty=target_specialty, env=self.env)
-                self.doctors.append(new_doctor)
-                
-        elif new_count < current_count:
-            # Remove doctors (only remove those without patients)
-            free_doctors = [d for d in self.doctors if d.resource.count == 0 and not d.queue]
-            
-            # If we don't have enough free doctors, just remove what we can
-            remove_count = min(len(free_doctors), current_count - new_count)
-            
-            # Remove the requested number of doctors
-            for _ in range(remove_count):
-                # Prefer to remove specialists over generalists to maintain core capacity
-                specialists = [d for d in free_doctors if d.specialty != "generalist"]
-                if specialists:
-                    doc_to_remove = specialists[0]
-                else:
-                    doc_to_remove = free_doctors[0]
-                
-                self.doctors.remove(doc_to_remove)
-                free_doctors.remove(doc_to_remove)
+
     
     def _log_event(self, event_id: str, event_type: str, params: Dict[str, Any], duration_minutes: int) -> None:
         """Log an event to the database.
@@ -648,8 +801,8 @@ class HospitalSim:
                 json.dumps(params),
                 current_sim_date.isoformat(),
                 end_sim_date.isoformat(),
-                self.env.now,
-                self.env.now + duration_minutes,
+                int(self.env.now),
+                int(self.env.now + duration_minutes),
                 datetime.now().isoformat()
             ))
             conn.commit()
@@ -746,3 +899,38 @@ class HospitalSim:
                     factors['arrival_rate'] *= 0.8  # Fewer people come to hospital during storms
         
         return factors
+
+    def log_detailed_event(self, event_type: str, patient_id: str, doctor_id: Optional[int], details: Dict[str, Any]) -> None:
+        """Log a detailed simulation event to the database.
+        
+        Args:
+            event_type: Type of event (e.g., 'patient_arrival', 'doctor_assigned', 'treatment_start')
+            patient_id: ID of the patient involved
+            doctor_id: ID of the doctor involved (if any)
+            details: Additional event details as a dictionary
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Convert simulation time to actual date
+            current_sim_date = self.start_date + timedelta(minutes=self.env.now)
+            
+            cursor.execute('''
+            INSERT INTO detailed_events 
+            (sim_id, event_type, patient_id, doctor_id, event_time, sim_minutes, details, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                self.sim_id,
+                event_type,
+                patient_id,
+                doctor_id,
+                current_sim_date.isoformat(),
+                self.env.now,
+                json.dumps(details),
+                datetime.now().isoformat()
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging detailed event: {e}")

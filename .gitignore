@@ -9,4 +9,5 @@ __pycache__
 /data
 docs
 
-
+# VS-Code related
+.vscode

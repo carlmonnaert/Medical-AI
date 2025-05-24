@@ -130,6 +130,6 @@ DASHBOARD_DEBUG = True
 DASHBOARD_UPDATE_INTERVAL = 5000  # milliseconds
 
 # Default simulation parameters
-DEFAULT_NUM_DOCTORS = 30  # Increased from 18 to handle patient load better
+DEFAULT_NUM_DOCTORS = 25  # Adjusted from 30 to 25 for better balance
 DEFAULT_ARRIVAL_RATE = 20  # Reduced from 50 to 20 patients per hour (1 per 3 minutes on average)
 DEFAULT_SIM_MINUTES = 525600  # 1 year

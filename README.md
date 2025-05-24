@@ -2,6 +2,9 @@
 
 > ARTISHOW - Telecom Paris
 > Maxence GUINZIEMBA-PROKOP, Arsène MALLET, Carl MONNAERT, Lukas TABOURI
+
+---
+
 > [!CAUTION]
 > Le projet est encore en cours de développement.
 

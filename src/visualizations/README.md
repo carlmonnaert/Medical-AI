@@ -5,11 +5,13 @@ Un tableau de bord web complet pour surveiller et analyser les données de simul
 ## Fonctionnalités
 
 ### Tableau de bord multi-pages
+
 - **Page Analytique** : Graphiques temporels et statistiques complètes
 - **Page Incidents** : Surveillance des alertes et analyse des périodes problématiques
 - **Page Temps réel** : Lecture de la simulation avec vitesse configurable
 
 ### Capacités analytiques
+
 - Flux de patients dans le temps (total, traités, en attente)
 - Utilisation des médecins et métriques de performance
 - Modèles horaires de traitement et analyse des temps d’attente
@@ -18,6 +20,7 @@ Un tableau de bord web complet pour surveiller et analyser les données de simul
 - Contrôles interactifs des graphiques (afficher/masquer séries, plages temporelles, types de graphiques)
 
 ### Surveillance des incidents
+
 - Détection des périodes de forte attente
 - Alertes de sur-utilisation des médecins
 - Suivi du plus long temps d’attente patient
@@ -25,6 +28,7 @@ Un tableau de bord web complet pour surveiller et analyser les données de simul
 - Analyse des motifs d’incidents par heure et type
 
 ### Lecture temps réel de la simulation
+
 - Lecture à vitesse variable (du temps réel à 1 mois = 1 minute)
 - Surveillance en direct de l’état de l’hôpital
 - Fil d’événements récents
@@ -35,11 +39,13 @@ Un tableau de bord web complet pour surveiller et analyser les données de simul
 ## Installation
 
 1. **Installer les dépendances**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Vérifier l’existence de la base de données**
+
    ```bash
    # Lancez d’abord une simulation pour générer des données
    python main.py --simulation --doctors=25 --rate=18 --minutes=1440
@@ -48,6 +54,7 @@ Un tableau de bord web complet pour surveiller et analyser les données de simul
 ## Utilisation
 
 ### Démarrage rapide
+
 ```bash
 # Lancer le tableau de bord directement
 python dashboard.py
@@ -60,6 +67,7 @@ python main.py --dashboard --port=8080
 ```
 
 ### Workflow complet
+
 ```bash
 # 1. Lancer une simulation pour générer des données
 python main.py --simulation --doctors=30 --rate=20 --minutes=2880
@@ -83,7 +91,7 @@ Le tableau de bord fournit des endpoints API REST pour l’accès aux données :
 
 ## Architecture
 
-```
+```text
 src/visualizations/
 ├── dashboard.py          # Application Flask et routes API
 ├── templates/            # Modèles HTML
@@ -108,13 +116,13 @@ src/visualizations/
 
 ## Pages du tableau de bord
 
-### Tableau de bord principal (/)
 - Liste toutes les simulations disponibles
 - Affiche les statistiques et l’état des simulations
 - Navigation rapide vers les autres pages
 - Interface de sélection de simulation
 
 ### Analytique (/analytics/{sim_id})
+
 - **Graphiques de flux de patients** : Suivi du nombre de patients dans le temps
 - **Utilisation des médecins** : Suivi de l’efficacité et des périodes de forte activité
 - **Modèles horaires** : Identification des pics de traitement
@@ -123,6 +131,7 @@ src/visualizations/
 - **Tableau de performance des médecins** : Statistiques individuelles
 
 ### Incidents (/incidents/{sim_id})
+
 - **Alertes de forte attente** : Périodes avec attente excessive
 - **Incidents d’occupation** : Trop de médecins occupés
 - **Chronologie des événements** : Événements de simulation (épidémies, catastrophes, etc.)
@@ -130,6 +139,7 @@ src/visualizations/
 - **Analyse des motifs** : Fréquence des incidents par heure et type
 
 ### Temps réel (/realtime/{sim_id})
+
 - **Contrôles de lecture** : Lecture/pause/arrêt avec sélection de vitesse
 - **Métriques en direct** : Nombre actuel de patients et médecins
 - **Graphiques d’activité** : Fenêtre glissante de 2h d’activité
@@ -138,6 +148,7 @@ src/visualizations/
 - **Système d’alertes** : Avertissements actifs pour conditions problématiques
 
 ### Prédictions (/predictions/{sim_id})
+
 - **Prédictions de dangers** : Affichage des risques de surcharge, d'attente excessive, de sous-effectif, etc.
 - **Scores de danger** : Visualisation des scores de danger actuels et futurs (court, moyen, long terme)
 - **Explications des modèles** : Affichage des variables influentes et des seuils critiques
@@ -147,11 +158,13 @@ src/visualizations/
 ## Personnalisation
 
 ### Ajouter de nouveaux graphiques
+
 1. Ajouter un endpoint de données dans `dashboard.py`
 2. Créer le graphique dans le fichier JavaScript correspondant
 3. Mettre à jour le modèle HTML avec le conteneur du graphique
 
 ### Options de vitesse
+
 - **Temps réel** : 1 minute = 1 minute
 - **Rapide** : 1 minute = 1 seconde
 - **Très rapide** : 1 heure = 1 seconde (par défaut)
@@ -159,6 +172,7 @@ src/visualizations/
 - **Mois** : 1 mois = 1 minute
 
 ### Contrôles de graphiques
+
 - Afficher/masquer des séries
 - Filtrage par plage temporelle (24h, 7j, 30j, tout)
 - Granularité des données (minute, heure, jour)
@@ -187,6 +201,7 @@ src/visualizations/
    - Essayez différents réglages de vitesse
 
 ### Conseils de performance
+
 - Utilisez les filtres temporels pour les grands jeux de données
 - Diminuez la granularité des graphiques pour de meilleures performances
 - Fermez les onglets inutilisés lors de longues lectures
@@ -194,17 +209,20 @@ src/visualizations/
 ## Développement
 
 ### Technologies frontend
+
 - **Bootstrap 5** : Framework UI réactif
 - **Chart.js** : Graphiques interactifs
 - **Font Awesome** : Icônes et éléments visuels
 - **JavaScript Vanilla** : Pas de framework lourd pour de meilleures performances
 
 ### Technologies backend
+
 - **Flask** : Framework web léger
 - **SQLite** : Requêtes et agrégation de données
 - **Python** : Traitement des données et logique API
 
 ### Conception de l’API
+
 - Endpoints REST avec réponses JSON cohérentes
 - Gestion des erreurs avec messages explicites
 - Paramètres de requête flexibles pour le filtrage

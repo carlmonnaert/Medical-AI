@@ -1,7 +1,7 @@
 # ia-medical : Système de Simulation Hospitalière & Prédiction IA
-> ARTISHOW - Telecom Paris
-> Maxence GUINZIEMBA-PROKOP, Arsene MALLET, Carl MONNAERT, Lukas TABOURI
 
+> ARTISHOW - Telecom Paris
+> Maxence GUINZIEMBA-PROKOP, Arsène MALLET, Carl MONNAERT, Lukas TABOURI
 > [!CAUTION]
 > Le projet est encore en cours de développement.
 
@@ -38,7 +38,7 @@ Un système complet de simulation hospitalière intégrant une simulation par é
 
 ## Architecture du système
 
-```
+```plain
 ia-medical/
 ├── main.py                    # Point d'entrée principal
 ├── src/
@@ -152,12 +152,14 @@ python src/run_ml.py --predict 1
 ## Pages du dashboard
 
 ### Dashboard principal (/)
+
 - Liste des simulations disponibles
 - Statistiques et état des simulations
 - Navigation rapide
 - Sélection de simulation
 
 ### Analytique (/analytics/{sim_id})
+
 - **Flux patients** : Suivi du nombre de patients dans le temps
 - **Utilisation médecins** : Efficacité et périodes de forte activité
 - **Modèles horaires** : Identification des pics
@@ -166,13 +168,15 @@ python src/run_ml.py --predict 1
 - **Performance médecins** : Statistiques individuelles
 
 ### Incidents (/incidents/{sim_id})
+
 - **Alertes forte attente** : Périodes d’attente excessive
 - **Incidents occupation** : Trop de médecins occupés
-- **Chronologie événements** : Epidémies, catastrophes, etc.
+- **Chronologie événements** : Épidémies, catastrophes, etc.
 - **Pires cas patients** : Plus longs temps d’attente
 - **Analyse motifs** : Fréquence par heure/type
 
 ### Temps réel (/realtime/{sim_id})
+
 - **Contrôles lecture** : Lecture/pause/arrêt, vitesse
 - **Métriques en direct** : Patients et médecins actuels
 - **Graphiques activité** : Fenêtre glissante 2h
@@ -181,6 +185,7 @@ python src/run_ml.py --predict 1
 - **Alertes** : Avertissements actifs
 
 ### Prédictions (/predictions/{sim_id})
+
 - **Prédictions de dangers** : Surcharge, attente, sous-effectif, etc.
 - **Scores de danger** : Scores actuels et futurs (court, moyen, long terme)
 - **Explications modèles** : Variables influentes, seuils critiques

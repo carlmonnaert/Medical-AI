@@ -8,6 +8,7 @@ __pycache__
 # Output, data
 /data
 docs
+/models
 
 # VS-Code related
 .vscode

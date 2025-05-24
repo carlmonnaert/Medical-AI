@@ -7,6 +7,7 @@
 
 > [!CAUTION]
 > Le projet est encore en cours de développement.
+> Pour suivre l'avancement indicatif de notre projet, voir le [planning](./PLANNING.md)
 
 Un système complet de simulation hospitalière intégrant une simulation par événements discrets, une surveillance en temps réel, des prédictions par apprentissage automatique et des dashboards interactifs.
 

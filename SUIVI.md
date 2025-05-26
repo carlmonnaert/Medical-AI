@@ -106,3 +106,8 @@
 - **(Tous)** : Premiers tests de modèles de machine-learning pour la prediction de l'état de l'hôpital.
 
 - **(Tous)** : Suppression des V1,V2,V3 dans la branche principal, tous le code est dorénavant dans le fichier [src](./src) sauf le programme [main](./main.py), qui est le point d'entrée à notre code. Les simulations précédentes seront disponibles dans la branche `archive` (et bien sûr en parcourant l'historique git).
+
+## 26/05
+
+  - **(Tous)** : Lecture des retours de nos camrades. Prise en considération de leurs avis et brainstorming sur les derniers étapes à faire. Mise en place d'une stratégie pour implémenter l'intelligence artificielle dans notre projet. Recherche de dataset intéressant et OpenSource sur Kaggle.
+  

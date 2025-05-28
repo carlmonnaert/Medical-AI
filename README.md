@@ -96,7 +96,7 @@ python main.py --simulation --dashboard --doctors=25 --rate=15
 
 # Ou lancer les composants séparément :
 python main.py --simulation --doctors=20 --duration=5
-python main.py --dashboard --port=5000
+python main.py --dashboard --port=8080
 python main.py --ml --train
 python main.py --ml --predict --sim-id=1
 
@@ -108,11 +108,11 @@ python main.py --docs
 
 Une fois lancé, accédez à l’interface web :
 
-- **Tableau de bord principal** : `http://localhost:5000`
-- **Analytique** : `http://localhost:5000/analytics/{sim_id}`
-- **Prédictions IA** : `http://localhost:5000/predictions/{sim_id}`
-- **Temps réel** : `http://localhost:5000/realtime/{sim_id}`
-- **Incidents** : `http://localhost:5000/incidents/{sim_id}`
+- **Tableau de bord principal** : `http://localhost:8080`
+- **Analytique** : `http://localhost:8080/analytics/{sim_id}`
+- **Prédictions IA** : `http://localhost:8080/predictions/{sim_id}`
+- **Temps réel** : `http://localhost:8080/realtime/{sim_id}`
+- **Incidents** : `http://localhost:8080/incidents/{sim_id}`
 
 ## Système de prédiction IA
 
@@ -316,6 +316,8 @@ python src/run_ml.py [options]
 - **Bootstrap 5.1+** - UI (CDN)
 - **Font Awesome 6.0+** - Icônes (CDN)
 
+
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
+

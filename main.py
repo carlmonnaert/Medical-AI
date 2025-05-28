@@ -33,7 +33,7 @@ def main():
     parser.add_argument("--docs", action="store_true", help="Generate documentation")
     
     # Dashboard options
-    parser.add_argument("--port", type=int, help="Dashboard port (default: 5000)")
+    parser.add_argument("--port", type=int, help="Dashboard port (default: 8080)")
     parser.add_argument("--host", type=str, help="Dashboard host (default: localhost)")
     parser.add_argument("--debug", action="store_true", help="Run dashboard in debug mode")
     

@@ -110,3 +110,7 @@
 ## 26/05
 
   - **(Tous)** : Lecture des retours de nos camrades. Prise en considération de leurs avis et brainstorming sur les derniers étapes à faire. Mise en place d'une stratégie pour implémenter l'intelligence artificielle dans notre projet. Recherche de dataset intéressant et OpenSource sur Kaggle.
+
+## 02/06
+
+  - **(Arsène)** : Test des algorithmes de ML implémentés, renseignement sur les optimisations et alternatives.

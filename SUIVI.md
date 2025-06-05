@@ -114,3 +114,15 @@
 ## 02/06
 
   - **(Arsène)** : Test des algorithmes de ML implémentés, renseignement sur les optimisations et alternatives.
+  - **(Maxence)** : Lecture de documentation sur les ML implémentables, renseignement sur les dataset exploitables.
+
+
+
+
+
+
+
+
+
+
+

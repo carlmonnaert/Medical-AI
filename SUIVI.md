@@ -116,7 +116,9 @@
   - **(Arsène)** : Test des algorithmes de ML implémentés, renseignement sur les optimisations et alternatives.
   - **(Maxence)** : Lecture de documentation sur les ML implémentables, renseignement sur les dataset exploitables.
 
+## 18/06 
 
+  - **(Maxence et Arsène)** : Création du [poster](./img/poster-ia-medical.svg)
 
 
 

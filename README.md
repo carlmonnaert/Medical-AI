@@ -316,6 +316,8 @@ python src/run_ml.py [options]
 - **Bootstrap 5.1+** - UI (CDN)
 - **Font Awesome 6.0+** - Icônes (CDN)
 
+## Poster de présentation 
+![poster](./img/poster-ia-medical.svg)
 
 ## Licence
 

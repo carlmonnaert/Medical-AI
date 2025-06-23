@@ -39,6 +39,24 @@ Un système complet de simulation hospitalière intégrant une simulation par é
 - **Visualisations interactives** : Graphiques dynamiques (Chart.js)
 - **Métriques de performance** : Efficacité des médecins, satisfaction patient, utilisation système
 - **Analyse de tendances** : Historique et variations saisonnières
+- **Trajectoires multiples** : Génération de scénarios alternatifs basés sur l'historique
+
+### Génération de trajectoires
+
+Le système peut générer des trajectoires multiples pour explorer différents scénarios futurs :
+
+```bash
+# Générer 50 trajectoires de 30 jours pour la simulation 1
+python -m src.simulation.sim_utils trajectories 1 --num=50 --days=30
+
+# Analyser les résultats
+python -m src.simulation.sim_utils analyze 1
+
+# Voir les résultats dans le dashboard
+# Accéder à http://localhost:8080/trajectories/1
+```
+
+**Conditions requises** : La simulation de base doit avoir au moins 1 mois de données.
 
 ## Architecture du système
 
@@ -113,6 +131,7 @@ Une fois lancé, accédez à l’interface web :
 - **Prédictions IA** : `http://localhost:8080/predictions/{sim_id}`
 - **Temps réel** : `http://localhost:8080/realtime/{sim_id}`
 - **Incidents** : `http://localhost:8080/incidents/{sim_id}`
+- **Trajectoires** : `http://localhost:8080/trajectories/{sim_id}`
 
 ## Système de prédiction IA
 
@@ -195,6 +214,15 @@ python src/run_ml.py --predict 1
 - **Explications modèles** : Variables influentes, seuils critiques
 - **Historique alertes prédictives** : Périodes anticipées par l’IA
 - **Comparaison réel vs prédit** : Graphiques comparatifs
+
+### Trajectoires (/trajectories/{sim_id})
+
+- **Analyse multi-scénarios** : 50+ trajectoires alternatives du futur
+- **Intervalles de confiance** : Percentiles 25, 50, 75 des résultats
+- **Statistiques comparatives** : Moyenne, médiane, écart-type par métrique
+- **Scénarios extrêmes** : Identification des meilleurs et pires cas
+- **Distribution des résultats** : Histogrammes des valeurs finales
+- **Analyse détaillée** : Exploration individuelle des trajectoires
 
 ## Configuration
 

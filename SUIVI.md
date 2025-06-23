@@ -122,7 +122,7 @@
 
 ## 18/06 
 
-  - **(Maxence)** :
+  - **(Maxence et Carl)** : Réunion pour l'implémentation de la logique de simulation de trajectoires en fonction des données de passées. Simuler Monte Carlo pour avoir un interval de confiance sur la stabilité du systéme.  
 
 
 

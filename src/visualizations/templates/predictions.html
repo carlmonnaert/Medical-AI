@@ -345,6 +345,7 @@
     <script>
         // Initialize predictions with simulation ID
         const SIM_ID = {% if sim_id %}{{ sim_id | tojson }}{% else %}null{% endif %};
+        
         window.addEventListener('DOMContentLoaded', function() {
             if (SIM_ID) {
                 initializePredictions(SIM_ID);

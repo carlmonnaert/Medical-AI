@@ -167,7 +167,22 @@ function displayLongWaitPatients() {
     const tbody = document.getElementById('longWaitPatientsBody');
     tbody.innerHTML = '';
     
+    // Group patients by patient_id and keep only the longest wait time for each patient
+    const patientMap = new Map();
+    
     incidentsData.long_wait_patients.forEach(patient => {
+        const patientId = patient.patient_id;
+        
+        if (!patientMap.has(patientId) || patient.wait_time > patientMap.get(patientId).wait_time) {
+            patientMap.set(patientId, patient);
+        }
+    });
+    
+    // Convert map to array and sort by wait time (longest first)
+    const uniquePatients = Array.from(patientMap.values())
+        .sort((a, b) => b.wait_time - a.wait_time);
+    
+    uniquePatients.forEach(patient => {
         const row = document.createElement('tr');
         const severity = getWaitTimeSeverity(patient.wait_time);
         
@@ -190,6 +205,8 @@ function displayLongWaitPatients() {
         
         tbody.appendChild(row);
     });
+    
+    console.log(`Displaying ${uniquePatients.length} unique patients (from ${incidentsData.long_wait_patients.length} total entries)`);
 }
 
 function createIncidentsCharts() {

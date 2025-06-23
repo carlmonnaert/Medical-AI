@@ -5,11 +5,12 @@ This module provides the main HospitalSim class that handles the simulation logi
 """
 
 import simpy
-import numpy as np
-import random
-import json
-from datetime import datetime, timedelta
 import sqlite3
+import json
+import random
+import numpy as np
+import os
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 
 from src.config import (
@@ -62,7 +63,6 @@ class HospitalSim:
         print(f"HospitalSim initializing with {num_doctors} doctors, {arrival_rate}/hr arrival rate")
         
         # Apply performance optimizations for Linux
-        import os
         if os.name == 'posix':  # Linux/Unix systems
             os.environ['PYTHONUNBUFFERED'] = '1'
             from src.data.db import optimize_database_performance

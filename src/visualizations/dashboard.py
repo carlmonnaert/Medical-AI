@@ -20,9 +20,10 @@ from datetime import datetime, timedelta
 import sqlite3
 import json
 from typing import Dict, List, Any, Optional
+import numpy as np
 
 from src.config import DB_PATH, DASHBOARD_PORT
-from src.data.db import get_db_connection, get_all_simulation_ids
+from src.data.db import get_db_connection, get_all_simulation_ids, get_trajectory_results, get_simulation_duration
 from src.ml.danger_prediction import get_danger_predictions, train_hospital_models
 
 app = Flask(__name__, 
@@ -64,6 +65,11 @@ def predictions_page(sim_id):
         return redirect(url_for('index'))
     
     return render_template('predictions.html', sim_id=sim_id)
+
+@app.route('/trajectories/<int:sim_id>')
+def trajectories(sim_id):
+    """Display trajectory analysis page for a simulation."""
+    return render_template('trajectories.html', sim_id=sim_id)
 
 # API Routes
 
@@ -520,7 +526,130 @@ def api_predict_future(sim_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    print(f"Starting dashboard server on port {DASHBOARD_PORT}")
-    print(f"Dashboard will be available at: http://localhost:{DASHBOARD_PORT}")
-    app.run(host='0.0.0.0', port=DASHBOARD_PORT, debug=True)
+@app.route('/api/simulation/<int:sim_id>/trajectories')
+def api_trajectories(sim_id):
+    """API endpoint for trajectory data."""
+    try:
+        # Get trajectory results
+        trajectory_results = get_trajectory_results(sim_id)
+        
+        if not trajectory_results:
+            return jsonify({
+                'trajectories': [],
+                'total_trajectories': 0,
+                'message': 'No trajectories found for this simulation'
+            })
+        
+        # Group results by trajectory
+        trajectories_dict = {}
+        for result in trajectory_results:
+            traj_id = result['trajectory_id']
+            if traj_id not in trajectories_dict:
+                trajectories_dict[traj_id] = {
+                    'trajectory_id': traj_id,
+                    'parameters': result['parameters'],
+                    'description': result['description'],
+                    'data': []
+                }
+            trajectories_dict[traj_id]['data'].append({
+                'sim_time': result['sim_time'],
+                'patients_total': result['patients_total'],
+                'patients_treated': result['patients_treated'],
+                'busy_doctors': result['busy_doctors'],
+                'waiting_patients': result['waiting_patients'],
+                'avg_wait_time': result['avg_wait_time']
+            })
+        
+        trajectories = list(trajectories_dict.values())
+        
+        # Calculate duration
+        duration_minutes = 0
+        if trajectories and trajectories[0]['data']:
+            first_time = min(point['sim_time'] for point in trajectories[0]['data'])
+            last_time = max(point['sim_time'] for point in trajectories[0]['data'])
+            duration_minutes = last_time - first_time
+        
+        # Calculate statistics across all trajectories
+        statistics = calculate_trajectory_statistics(trajectories)
+        
+        # Calculate average trajectory
+        average_trajectory = calculate_average_trajectory(trajectories)
+        
+        return jsonify({
+            'trajectories': trajectories,
+            'total_trajectories': len(trajectories),
+            'duration_minutes': duration_minutes,
+            'duration_days': duration_minutes / (24 * 60),
+            'statistics': statistics,
+            'average_trajectory': average_trajectory
+        })
+        
+    except Exception as e:
+        print(f"Error getting trajectory data for simulation {sim_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+def calculate_trajectory_statistics(trajectories):
+    """Calculate statistics across all trajectories."""
+    if not trajectories:
+        return {}
+    
+    # Get final values for each trajectory
+    final_values = {}
+    metrics = ['patients_total', 'patients_treated', 'waiting_patients', 'busy_doctors', 'avg_wait_time']
+    
+    for metric in metrics:
+        values = []
+        for traj in trajectories:
+            if traj['data']:
+                final_point = traj['data'][-1]  # Get last data point
+                values.append(final_point[metric])
+        
+        if values:
+            final_values[metric] = {
+                'mean': float(np.mean(values)),
+                'median': float(np.median(values)),
+                'std': float(np.std(values)),
+                'min': float(np.min(values)),
+                'max': float(np.max(values)),
+                'p25': float(np.percentile(values, 25)),
+                'p75': float(np.percentile(values, 75))
+            }
+    
+    return final_values
+
+def calculate_average_trajectory(trajectories):
+    """Calculate the average trajectory across all simulations."""
+    if not trajectories:
+        return []
+    
+    # Get all unique time points
+    all_times = set()
+    for traj in trajectories:
+        for point in traj['data']:
+            all_times.add(point['sim_time'])
+    
+    sorted_times = sorted(all_times)
+    
+    # Calculate averages for each time point
+    average_trajectory = []
+    metrics = ['patients_total', 'patients_treated', 'waiting_patients', 'busy_doctors', 'avg_wait_time']
+    
+    for time in sorted_times:
+        avg_point = {'sim_time': time}
+        
+        for metric in metrics:
+            values = []
+            for traj in trajectories:
+                # Find data point for this time
+                point = next((p for p in traj['data'] if p['sim_time'] == time), None)
+                if point:
+                    values.append(point[metric])
+            
+            if values:
+                avg_point[metric] = float(np.mean(values))
+            else:
+                avg_point[metric] = 0
+        
+        average_trajectory.append(avg_point)
+    
+    return average_trajectory

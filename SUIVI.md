@@ -120,8 +120,9 @@
 
   - **(Maxence et Arsène)** : Création du [poster](./img/poster-ia-medical.svg)
 
+## 18/06 
 
-
+  - **(Maxence)** :
 
 
 

@@ -27,9 +27,6 @@
                 <a class="nav-link active" href="#" id="predictionsLink">
                     <i class="fas fa-brain"></i> Predictions
                 </a>
-                <a class="nav-link" href="/trajectories/{{ sim_id }}" id="trajectoriesLink">
-                    <i class="fas fa-project-diagram"></i> Trajectories
-                </a>
                 <a class="nav-link" href="/">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
@@ -338,6 +335,19 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Hide loading modal after 2 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            var loadingModal = document.getElementById('loadingModal');
+            if (loadingModal) {
+                var modalInstance = bootstrap.Modal.getOrCreateInstance(loadingModal);
+                setTimeout(function() {
+                    modalInstance.hide();
+                }, 2000);
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -345,7 +355,6 @@
     <script>
         // Initialize predictions with simulation ID
         const SIM_ID = {% if sim_id %}{{ sim_id | tojson }}{% else %}null{% endif %};
-        
         window.addEventListener('DOMContentLoaded', function() {
             if (SIM_ID) {
                 initializePredictions(SIM_ID);

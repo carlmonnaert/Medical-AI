@@ -10,187 +10,151 @@
 
 let currentSimId = null;
 let predictionCharts = {};
-let predictionsData = null;
-let currentModal = null;
-let currentTimeoutId = null;
+let predictionData = null;
+let refreshInterval = null;
 
 /**
  * Initialize the predictions dashboard
  */
-async function initializePredictions(simId) {
+function initializePredictions(simId) {
     currentSimId = simId;
     
-    // Show loading modal with timeout protection
-    const { modal, timeoutId } = showLoadingModalWithTimeout('Loading predictions...', 30000);
-    currentModal = modal;
-    currentTimeoutId = timeoutId;
+    // Set up event listeners
+    setupEventListeners();
     
-    try {
-        await loadPredictionsData();
-        
-        // Clear timeout and hide modal on success
-        if (currentTimeoutId) {
-            clearTimeout(currentTimeoutId);
-            currentTimeoutId = null;
-        }
-        hideLoadingModal(currentModal);
-        currentModal = null;
-        
-    } catch (error) {
-        // Clear timeout and hide modal on error
-        if (currentTimeoutId) {
-            clearTimeout(currentTimeoutId);
-            currentTimeoutId = null;
-        }
-        hideLoadingModal(currentModal);
-        currentModal = null;
-        
-        showError('Failed to load predictions: ' + error.message);
-    }
+    // Load initial predictions
+    loadPredictions();
+    
+    // Set up auto-refresh (every 5 minutes)
+    refreshInterval = setInterval(() => {
+        loadPredictions(false); // Silent refresh
+    }, 5 * 60 * 1000);
+}
+
+/**
+ * Set up event listeners for user interactions
+ */
+function setupEventListeners() {
+    // Refresh button
+    document.getElementById('refreshPredictions').addEventListener('click', () => {
+        loadPredictions(true);
+    });
+    
+    // Train models button
+    document.getElementById('trainModels').addEventListener('click', () => {
+        trainModels();
+    });
 }
 
 /**
  * Load predictions from the API
  */
-async function loadPredictionsData() {
+async function loadPredictions(showLoading = true) {
+    if (showLoading) {
+        showLoadingModal('Generating predictions...');
+    }
+    
     try {
         const response = await fetch(`/api/simulation/${currentSimId}/predictions`);
-        const result = await response.json();
         
-        if (result.success) {
-            predictionsData = result.data;
-            updatePredictionsDisplay();
-        } else {
-            // If predictions need to be generated, show appropriate modal
-            if (result.error && result.error.includes('generating')) {
-                const { modal, timeoutId } = showLoadingModalWithTimeout('Generating predictions... This may take several minutes.', 120000);
-                currentModal = modal;
-                currentTimeoutId = timeoutId;
-                
-                // Poll for completion
-                await pollForPredictions();
-            } else {
-                throw new Error(result.error || 'Unknown error occurred');
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
+        predictionData = await response.json();
+        
+        if (predictionData.error) {
+            throw new Error(predictionData.error);
+        }
+        
+        updatePredictionDisplay();
+        
+        if (showLoading) {
+            hideLoadingModal();
+        }
+        
     } catch (error) {
         console.error('Error loading predictions:', error);
-        throw error;
-    }
-}
-
-/**
- * Poll for predictions completion
- */
-async function pollForPredictions() {
-    const maxAttempts = 24; // 2 minutes with 5 second intervals
-    let attempts = 0;
-    
-    const pollInterval = setInterval(async () => {
-        attempts++;
         
-        try {
-            const response = await fetch(`/api/simulation/${currentSimId}/predictions`);
-            const result = await response.json();
-            
-            if (result.success) {
-                // Success! Clear polling and hide modal
-                clearInterval(pollInterval);
-                
-                if (currentTimeoutId) {
-                    clearTimeout(currentTimeoutId);
-                    currentTimeoutId = null;
-                }
-                
-                hideLoadingModal(currentModal);
-                currentModal = null;
-                
-                predictionsData = result.data;
-                updatePredictionsDisplay();
-                
-            } else if (attempts >= maxAttempts) {
-                // Max attempts reached
-                clearInterval(pollInterval);
-                
-                if (currentTimeoutId) {
-                    clearTimeout(currentTimeoutId);
-                    currentTimeoutId = null;
-                }
-                
-                hideLoadingModal(currentModal);
-                currentModal = null;
-                
-                throw new Error('Prediction generation timed out');
-            }
-            // Continue polling if not ready and under max attempts
-            
-        } catch (error) {
-            clearInterval(pollInterval);
-            
-            if (currentTimeoutId) {
-                clearTimeout(currentTimeoutId);
-                currentTimeoutId = null;
-            }
-            
-            hideLoadingModal(currentModal);
-            currentModal = null;
-            
-            throw error;
+        if (showLoading) {
+            hideLoadingModal();
         }
-    }, 5000); // Poll every 5 seconds
+        
+        showErrorAlert(`Failed to load predictions: ${error.message}`);
+    }
 }
 
 /**
  * Update the entire prediction display with new data
  */
-function updatePredictionsDisplay() {
-    if (!predictionsData) {
-        console.warn('No predictions data available');
-        return;
-    }
+function updatePredictionDisplay() {
+    if (!predictionData) return;
     
-    // Update overall danger score
     updateOverallDangerScore();
-    
-    // Update current metrics
     updateCurrentMetrics();
-    
-    // Update time horizon predictions
     updateTimeHorizonPredictions();
-    
-    // Update individual danger types
-    updateIndividualDangerTypes();
-    
-    // Update charts
+    updateIndividualPredictions();
     updatePredictionCharts();
-    
-    // Update model information
-    updateModelInformation();
+    updateModelInfo();
 }
 
 /**
  * Update the overall danger score display
  */
 function updateOverallDangerScore() {
-    // Placeholder implementation - replace with actual data
-    const dangerScore = Math.round(Math.random() * 100);
-    const riskLevel = dangerScore > 70 ? 'HIGH' : dangerScore > 40 ? 'MEDIUM' : 'LOW';
-    const riskClass = dangerScore > 70 ? 'bg-danger' : dangerScore > 40 ? 'bg-warning' : 'bg-success';
+    const score = predictionData.overall_danger_score || 0;
+    const scorePercent = Math.round(score * 100);
     
-    document.getElementById('dangerScoreText').textContent = dangerScore;
-    document.getElementById('riskLevelBadge').textContent = riskLevel;
-    document.getElementById('riskLevelBadge').className = `badge ${riskClass}`;
+    // Update score circle
+    const scoreElement = document.getElementById('dangerScoreText');
+    const scoreCircle = document.getElementById('overallDangerScore');
+    const riskBadge = document.getElementById('riskLevelBadge');
+    
+    scoreElement.textContent = `${scorePercent}%`;
+    
+    // Determine risk level and styling
+    let riskLevel, riskClass, circleClass;
+    if (score >= 0.7) {
+        riskLevel = 'High Risk';
+        riskClass = 'bg-danger';
+        circleClass = 'danger-high';
+    } else if (score >= 0.4) {
+        riskLevel = 'Medium Risk';
+        riskClass = 'bg-warning';
+        circleClass = 'danger-medium';
+    } else {
+        riskLevel = 'Low Risk';
+        riskClass = 'bg-success';
+        circleClass = 'danger-low';
+    }
+    
+    // Update risk badge
+    riskBadge.textContent = riskLevel;
+    riskBadge.className = `badge ${riskClass}`;
+    
+    // Update score circle styling
+    scoreCircle.className = `danger-score-circle ${circleClass}`;
+    
+    // Add visual indicator to circle
+    const percentage = score * 100;
+    scoreCircle.style.background = `conic-gradient(
+        ${getRiskColor(score)} ${percentage * 3.6}deg,
+        #e9ecef ${percentage * 3.6}deg
+    )`;
 }
 
 /**
  * Update current metrics display
  */
 function updateCurrentMetrics() {
-    // Placeholder implementation - replace with actual data
-    document.getElementById('patientsTotal').textContent = Math.round(Math.random() * 50 + 20);
-    document.getElementById('patientsWaiting').textContent = Math.round(Math.random() * 15);
-    document.getElementById('doctorsUtilization').textContent = Math.round(Math.random() * 40 + 60) + '%';
-    document.getElementById('avgWaitTime').textContent = Math.round(Math.random() * 30 + 15) + ' min';
+    const metrics = predictionData.current_metrics || {};
+    
+    document.getElementById('patientsTotal').textContent = metrics.patients_total || '--';
+    document.getElementById('patientsWaiting').textContent = metrics.patients_waiting || '--';
+    document.getElementById('doctorsUtilization').textContent = 
+        metrics.doctor_utilization ? `${Math.round(metrics.doctor_utilization * 100)}%` : '--%';
+    document.getElementById('avgWaitTime').textContent = 
+        metrics.avg_wait_time ? `${Math.round(metrics.avg_wait_time)} min` : '-- min';
 }
 
 /**
@@ -198,23 +162,30 @@ function updateCurrentMetrics() {
  */
 function updateTimeHorizonPredictions() {
     const container = document.getElementById('timeHorizonPredictions');
-    const horizons = ['1 Hour', '4 Hours', '12 Hours', '24 Hours'];
+    const horizons = predictionData.time_horizon_predictions || {};
     
     container.innerHTML = '';
     
-    horizons.forEach(horizon => {
-        const danger = Math.round(Math.random() * 100);
-        const dangerClass = danger > 70 ? 'danger' : danger > 40 ? 'warning' : 'success';
-        
+    Object.entries(horizons).forEach(([key, horizon]) => {
         const col = document.createElement('div');
         col.className = 'col-md-3 mb-3';
+        
+        const score = horizon.danger_score || 0;
+        const scorePercent = Math.round(score * 100);
+        const riskClass = getRiskClass(score);
+        const riskIcon = getRiskIcon(horizon.risk_level);
+        
         col.innerHTML = `
-            <div class="text-center">
-                <h6>${horizon}</h6>
-                <div class="progress mb-2">
-                    <div class="progress-bar bg-${dangerClass}" style="width: ${danger}%"></div>
+            <div class="card h-100 border-${riskClass}">
+                <div class="card-body text-center">
+                    <h6 class="card-title">${horizon.label}</h6>
+                    <div class="danger-score-mini mb-2">
+                        <span class="score-text-mini">${scorePercent}%</span>
+                    </div>
+                    <span class="badge bg-${riskClass}">
+                        ${riskIcon} ${horizon.risk_level}
+                    </span>
                 </div>
-                <small class="text-${dangerClass}">${danger}% Risk</small>
             </div>
         `;
         
@@ -223,27 +194,44 @@ function updateTimeHorizonPredictions() {
 }
 
 /**
- * Update individual danger type displays
+ * Update individual prediction displays
  */
-function updateIndividualDangerTypes() {
-    const dangerTypes = [
-        { id: 'overload', name: 'Patient Overload' },
-        { id: 'waitTime', name: 'Long Wait Times' },
-        { id: 'staffing', name: 'Staffing Shortage' },
-        { id: 'systemStress', name: 'System Stress' }
-    ];
+function updateIndividualPredictions() {
+    const predictions = predictionData.individual_predictions || {};
     
-    dangerTypes.forEach(type => {
-        const probability = Math.round(Math.random() * 100);
-        const status = probability > 70 ? 'HIGH RISK' : probability > 40 ? 'MEDIUM RISK' : 'LOW RISK';
-        const statusClass = probability > 70 ? 'bg-danger' : probability > 40 ? 'bg-warning' : 'bg-success';
-        const barClass = probability > 70 ? 'bg-danger' : probability > 40 ? 'bg-warning' : 'bg-success';
+    // Map prediction types to UI elements
+    const predictionMap = {
+        'overload_danger': 'overload',
+        'wait_time_danger': 'waitTime',
+        'staffing_danger': 'staffing',
+        'system_stress': 'systemStress'
+    };
+    
+    Object.entries(predictionMap).forEach(([predType, uiPrefix]) => {
+        const prediction = predictions[predType];
+        if (!prediction || !prediction.danger_probability) return;
         
-        document.getElementById(`${type.id}Prob`).textContent = `${probability}%`;
-        document.getElementById(`${type.id}Status`).textContent = status;
-        document.getElementById(`${type.id}Status`).className = `status-badge badge ${statusClass}`;
-        document.getElementById(`${type.id}Bar`).style.width = `${probability}%`;
-        document.getElementById(`${type.id}Bar`).className = `progress-bar ${barClass}`;
+        const probability = prediction.danger_probability;
+        const isHigh = prediction.is_danger;
+        const probabilityPercent = Math.round(probability * 100);
+        
+        // Update progress bar
+        const progressBar = document.getElementById(`${uiPrefix}Bar`);
+        progressBar.style.width = `${probabilityPercent}%`;
+        progressBar.className = `progress-bar ${getProgressBarClass(probability)}`;
+        
+        // Update probability text
+        document.getElementById(`${uiPrefix}Prob`).textContent = `${probabilityPercent}%`;
+        
+        // Update status badge
+        const statusBadge = document.getElementById(`${uiPrefix}Status`);
+        if (isHigh) {
+            statusBadge.textContent = '🔴 High Risk';
+            statusBadge.className = 'status-badge badge bg-danger';
+        } else {
+            statusBadge.textContent = '🟢 Low Risk';
+            statusBadge.className = 'status-badge badge bg-success';
+        }
     });
 }
 
@@ -251,95 +239,135 @@ function updateIndividualDangerTypes() {
  * Update prediction charts
  */
 function updatePredictionCharts() {
-    // Create simple placeholder charts
-    createWaitTimePredictionChart();
-    createPatientCountPredictionChart();
-}
-
-function createWaitTimePredictionChart() {
-    const ctx = document.getElementById('waitTimePredictionChart').getContext('2d');
+    const predictions = predictionData.individual_predictions || {};
     
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Now', '+1h', '+2h', '+3h', '+4h', '+5h'],
-            datasets: [{
-                label: 'Predicted Wait Time',
-                data: [25, 30, 35, 32, 28, 26],
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Wait Time (minutes)'
+    // Update wait time prediction
+    if (predictions.wait_time_regression) {
+        const predicted = predictions.wait_time_regression.predicted_value || 0;
+        const current = predictions.wait_time_regression.current_value || 0;
+        
+        document.getElementById('predictedWaitTime').textContent = `${Math.round(predicted)} minutes`;
+        
+        updateChart('waitTimePredictionChart', {
+            type: 'bar',
+            data: {
+                labels: ['Current', 'Predicted'],
+                datasets: [{
+                    label: 'Wait Time (minutes)',
+                    data: [current, predicted],
+                    backgroundColor: ['#6c757d', predicted > current ? '#dc3545' : '#28a745'],
+                    borderColor: ['#495057', predicted > current ? '#dc3545' : '#28a745'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Minutes'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
                     }
                 }
             }
-        }
-    });
+        });
+    }
     
-    document.getElementById('predictedWaitTime').textContent = '32 minutes';
-}
-
-function createPatientCountPredictionChart() {
-    const ctx = document.getElementById('patientCountPredictionChart').getContext('2d');
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Now', '+1h', '+2h', '+3h', '+4h', '+5h'],
-            datasets: [{
-                label: 'Predicted Patient Count',
-                data: [35, 38, 42, 45, 41, 37],
-                borderColor: 'rgb(54, 162, 235)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Patient Count'
+    // Update patient count prediction
+    if (predictions.patient_count_regression) {
+        const predicted = predictions.patient_count_regression.predicted_value || 0;
+        const current = predictions.patient_count_regression.current_value || 0;
+        
+        document.getElementById('predictedPatientCount').textContent = `${Math.round(predicted)} patients`;
+        
+        updateChart('patientCountPredictionChart', {
+            type: 'bar',
+            data: {
+                labels: ['Current', 'Predicted'],
+                datasets: [{
+                    label: 'Patient Count',
+                    data: [current, predicted],
+                    backgroundColor: ['#6c757d', predicted > current ? '#fd7e14' : '#20c997'],
+                    borderColor: ['#495057', predicted > current ? '#fd7e14' : '#20c997'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Patients'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
                     }
                 }
             }
-        }
-    });
-    
-    document.getElementById('predictedPatientCount').textContent = '42 patients';
+        });
+    }
 }
 
 /**
  * Update model information display
  */
-function updateModelInformation() {
-    document.getElementById('lastTraining').textContent = 'Just now';
+function updateModelInfo() {
+    document.getElementById('lastTraining').textContent = 'Recent'; // Would come from API
     document.getElementById('predictionTime').textContent = new Date().toLocaleTimeString();
-    document.getElementById('modelsLoaded').textContent = '4';
-    document.getElementById('dataQuality').textContent = 'Good';
-    document.getElementById('dataQuality').className = 'badge bg-success';
-    document.getElementById('modelAccuracy').textContent = '87.3%';
-    document.getElementById('recommendation').textContent = 'Predictions are reliable for next 4-6 hours';
+    
+    const modelCount = Object.keys(predictionData.individual_predictions || {}).length;
+    document.getElementById('modelsLoaded').textContent = modelCount;
+    
+    // Data quality assessment
+    const overallScore = predictionData.overall_danger_score || 0;
+    let dataQuality, qualityClass;
+    
+    if (overallScore > 0) {
+        dataQuality = 'Good';
+        qualityClass = 'bg-success';
+    } else {
+        dataQuality = 'Limited';
+        qualityClass = 'bg-warning';
+    }
+    
+    const qualityBadge = document.getElementById('dataQuality');
+    qualityBadge.textContent = dataQuality;
+    qualityBadge.className = `badge ${qualityClass}`;
+    
+    document.getElementById('modelAccuracy').textContent = '85-92%'; // Would come from training metrics
+    
+    // Generate recommendation
+    let recommendation;
+    if (overallScore >= 0.7) {
+        recommendation = 'Immediate attention recommended - high risk detected';
+    } else if (overallScore >= 0.4) {
+        recommendation = 'Monitor situation closely - medium risk';
+    } else {
+        recommendation = 'System operating normally - continue monitoring';
+    }
+    
+    document.getElementById('recommendation').textContent = recommendation;
 }
 
 /**
  * Train ML models
  */
 async function trainModels() {
-    const { modal, timeoutId } = showLoadingModalWithTimeout('Training models...', 60000);
+    showLoadingModal('Training models...');
     
     try {
         const response = await fetch('/api/ml/train', {
@@ -352,32 +380,23 @@ async function trainModels() {
         
         const result = await response.json();
         
-        // Clear timeout and hide modal
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        hideLoadingModal(modal);
+        hideLoadingModal();
         
         if (result.error) {
             throw new Error(result.error);
         }
         
-        showError('Models trained successfully! Refreshing predictions...');
+        showSuccessAlert('Models trained successfully! Refreshing predictions...');
         
         // Refresh predictions after training
         setTimeout(() => {
-            if (currentSimId) {
-                initializePredictions(currentSimId);
-            }
+            loadPredictions(false);
         }, 1000);
         
     } catch (error) {
         console.error('Error training models:', error);
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        hideLoadingModal(modal);
-        showError(`Failed to train models: ${error.message}`);
+        hideLoadingModal();
+        showErrorAlert(`Failed to train models: ${error.message}`);
     }
 }
 
@@ -427,99 +446,69 @@ function getProgressBarClass(probability) {
     return 'bg-success';
 }
 
-function showLoadingModal(text = 'Loading...') {
+function showLoadingModal(text) {
     document.getElementById('loadingText').textContent = text;
-    const modalElement = document.getElementById('loadingModal');
-    const modal = new bootstrap.Modal(modalElement);
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
     modal.show();
-    return modal;
 }
 
-function hideLoadingModal(modal = null) {
-    try {
-        if (modal && typeof modal.hide === 'function') {
-            modal.hide();
-        } else {
-            // Fallback: find and hide any existing modal
-            const modalElement = document.getElementById('loadingModal');
-            if (modalElement) {
-                const existingModal = bootstrap.Modal.getInstance(modalElement);
-                if (existingModal) {
-                    existingModal.hide();
-                } else {
-                    // Force hide the modal by removing Bootstrap classes
-                    modalElement.classList.remove('show');
-                    modalElement.style.display = 'none';
-                    modalElement.setAttribute('aria-hidden', 'true');
-                    modalElement.removeAttribute('aria-modal');
-                    
-                    // Remove backdrop if it exists
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                        backdrop.remove();
-                    }
-                    
-                    // Remove modal-open class from body
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                }
-            }
+function hideLoadingModal() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+
+function showErrorAlert(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = container.querySelector('.alert');
+        if (alert) {
+            alert.remove();
         }
-    } catch (error) {
-        console.error('Error hiding modal:', error);
-        // Force cleanup
-        const modalElement = document.getElementById('loadingModal');
-        if (modalElement) {
-            modalElement.style.display = 'none';
-            modalElement.classList.remove('show');
+    }, 5000);
+}
+
+function showSuccessAlert(message) {
+    const alertHtml = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        const alert = container.querySelector('.alert');
+        if (alert) {
+            alert.remove();
         }
-        document.body.classList.remove('modal-open');
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-    }
+    }, 3000);
 }
-
-function showLoadingModalWithTimeout(text = 'Loading...', timeoutMs = 30000) {
-    const modal = showLoadingModal(text);
-    
-    // Set a timeout to force hide the modal if it takes too long
-    const timeoutId = setTimeout(() => {
-        hideLoadingModal(modal);
-        console.warn('Loading modal auto-closed after timeout');
-    }, timeoutMs);
-    
-    return { modal, timeoutId };
-}
-
-function showError(message) {
-    console.error(message);
-    alert(message);
-}
-
-// Event handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // Refresh predictions button
-    const refreshBtn = document.getElementById('refreshPredictions');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async function() {
-            if (currentSimId) {
-                await initializePredictions(currentSimId);
-            }
-        });
-    }
-    
-    // Train models button
-    const trainBtn = document.getElementById('trainModels');
-    if (trainBtn) {
-        trainBtn.addEventListener('click', async function() {
-            await trainModels();
-        });
-    }
-});
 
 // Clean up on page unload
 window.addEventListener('beforeunload', () => {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    
     // Destroy all charts
     Object.values(predictionCharts).forEach(chart => {
         if (chart) {

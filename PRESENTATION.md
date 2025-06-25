@@ -8,7 +8,7 @@
 
 **Objectifs du projet :**  L'objectif final de notre projet est de créer un outil qui aide les gestionnaires d'hopitaux à mieux organiser les ressources, anticiper les moments de forte affluence et optimiser la prise en charge des patients en s'appuyant sur les données réelles de leurs hôpital.
 
-## Mathématique du modéle - 1min - Carl 
+## Mathématiques du modéle - 1min - Carl 
 
 
 

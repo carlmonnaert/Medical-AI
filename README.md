@@ -350,4 +350,3 @@ python src/run_ml.py [options]
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
-

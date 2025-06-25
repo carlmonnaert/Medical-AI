@@ -2,8 +2,9 @@
 
 ## Introduction - 1min
 
-    - **(Contenu du projet)** : 
-    - **(Objectifs du projet)** : 
+    - **(Contenu du projet)** : Bonjour, notre projet développe un tableau de bord interactif pour suivre en temps réel l'activité hospitalière : arrivées de patients, pathologies et disponibilité des médecins. Nous avons. utilisé l'IA pour déterminer les périodes où l'hôpital risque d'être saturé. 
+   
+    - **(Objectifs du projet)** :  L'objectif final de notre projet est de créer un outil qui aide les gestionnaires d'hopitaux à mieux organiser les ressources, anticiper les moments de forte affluence et optimiser la prise en charge des patients en s'appuyant sur les données réelles de leurs hôpital.
 
 ## Gestion des datas - 2min - Arsène
 

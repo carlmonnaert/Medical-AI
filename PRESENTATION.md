@@ -10,6 +10,11 @@
 
 ## Mathématique du modéle - 1min - Carl 
 
+
+
+
+
+
 ## Simalution numérique - 2min - Maxence 
 
 Étant donné que nous avons rencontré beaucoup de difficultés pour trouver des données propres et utilisable pour notre projet. Notre encadrant nous a invité a créer notre propre simulation de donnée pour avoir une base sur laquelle s’appuyer. L’objectif était simple, nous devions simuler 

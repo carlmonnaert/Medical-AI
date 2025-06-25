@@ -27,7 +27,7 @@ Un système complet de simulation hospitalière intégrant une simulation par é
 - **Détection d’incidents** : Identification automatique des problèmes opérationnels
 - **Design responsive** : Compatible PC, tablette, mobile
 
-### Prédictions IA - TODO
+### Prédictions IA
 
 - **Prédiction de dangers** : Modèles ML pour prédire surcharge, longues attentes, sous-effectif
 - **Prévision multi-horizon** : De 1h à 1 semaine à l’avance
@@ -350,4 +350,5 @@ python src/run_ml.py [options]
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
+
 

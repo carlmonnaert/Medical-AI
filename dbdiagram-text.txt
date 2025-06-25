@@ -92,19 +92,3 @@ Table predictions {
   features text
   timestamp text
 }
-
-Table trajectories {
-  id integer [pk, increment]
-  sim_id integer [ref: > simulations.id]
-  trajectory_id integer
-  scenario_name text
-  start_time text
-  sim_minutes integer
-  patients_total integer
-  patients_treated integer
-  waiting_patients integer
-  busy_doctors integer
-  avg_wait_time real
-  generation_timestamp text
-  parameters text
-}

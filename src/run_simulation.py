@@ -3,6 +3,15 @@
 Main script to run the hospital simulation.
 
 This script initializes and runs the hospital simulation with the specified parameters.
+
+Usage examples:
+  python src/run_simulation.py --doctors=30 --rate=20 --minutes=1440
+  python src/run_simulation.py --resume --minutes=720
+  python src/run_simulation.py --clean --doctors=25 --rate=15
+
+For trajectory generation:
+  python -m src.simulation.sim_utils trajectories 1 --num=50 --days=30
+  python -m src.simulation.sim_utils analyze 1
 """
 
 import simpy

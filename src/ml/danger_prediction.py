@@ -63,15 +63,15 @@ class HospitalDangerPredictor:
     def load_training_data(self, db_path: str = DB_PATH) -> pd.DataFrame:
         """
         Load and prepare training data from all simulations.
-        
+
         Args:
             db_path: Path to database
-            
+
         Returns:
             Combined training data from all simulations
         """
         conn = get_db_connection()
-        
+
         # Load patient data with hospital state information
         query = """
         WITH hospital_metrics AS (

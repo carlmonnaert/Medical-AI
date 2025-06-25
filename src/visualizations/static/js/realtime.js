@@ -12,7 +12,7 @@ let playbackState = {
 let liveChart = null;
 let currentDiseasesChart = null;
 let previousState = null;
-let chartTimeScale = '2h'; // Default to 2 hours
+let chartTimeScale = '1w'; // Default to 1 week (7 days)
 
 document.addEventListener('DOMContentLoaded', function() {
     // Extract sim_id from URL
@@ -58,6 +58,11 @@ function setupControls() {
     document.getElementById('stopBtn').addEventListener('click', stopPlayback);
     document.getElementById('speedSelect').addEventListener('change', changeSpeed);
     document.getElementById('timeSlider').addEventListener('input', seekToTime);
+    
+    // Chart visibility toggles
+    document.getElementById('showCurrentPatients').addEventListener('change', updateChartVisibility);
+    document.getElementById('showWaitingPatients').addEventListener('change', updateChartVisibility);
+    document.getElementById('showBusyDoctors').addEventListener('change', updateChartVisibility);
     
     // Add time scale selector event listener
     const timeScaleSelect = document.getElementById('timeScaleSelect');
@@ -110,7 +115,7 @@ function setupCharts() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Live Hospital Activity (Last 2 Hours)'
+                    text: 'Live Hospital Activity (Last Week)'
                 }
             }
         }
@@ -229,7 +234,16 @@ function updateChangeIndicator(elementId, change) {
 }
 
 function updateLiveChart() {
-    const maxPoints = 30; // Show last 30 data points
+    // Adjust the number of points based on time scale for better visibility
+    let maxPoints;
+    switch (chartTimeScale) {
+        case '30m': maxPoints = 30; break;
+        case '2h': maxPoints = 60; break;
+        case '1d': maxPoints = 144; break;  // Every 10 minutes for 24 hours
+        case '1w': maxPoints = 168; break; // Every hour for 7 days
+        default: maxPoints = 30;
+    }
+    
     const states = realtimeData.hospital_states.slice(-maxPoints);
     
     liveChart.data.labels = states.map(state => formatTimeLabel(state.sim_minutes));
@@ -566,12 +580,33 @@ function formatEventDescription(event) {
 }
 
 function formatTimeLabel(minutes) {
-    const hours = Math.floor(minutes / 60) % 24;
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
     const mins = Math.floor(minutes % 60);
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    
+    if (days > 0) {
+        return `Day ${days + 1}, ${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    } else {
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    }
 }
 
 function showError(message) {
     console.error(message);
     alert(message);
+}
+
+function updateChartVisibility() {
+    if (!liveChart) return;
+    
+    const showCurrentPatients = document.getElementById('showCurrentPatients').checked;
+    const showWaitingPatients = document.getElementById('showWaitingPatients').checked;
+    const showBusyDoctors = document.getElementById('showBusyDoctors').checked;
+    
+    // Update dataset visibility
+    liveChart.data.datasets[0].hidden = !showCurrentPatients;
+    liveChart.data.datasets[1].hidden = !showWaitingPatients;
+    liveChart.data.datasets[2].hidden = !showBusyDoctors;
+    
+    liveChart.update();
 }

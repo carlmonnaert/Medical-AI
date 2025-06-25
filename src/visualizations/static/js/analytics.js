@@ -2,6 +2,7 @@
 let analyticsData = null;
 let charts = {};
 let currentSimId = null;
+let currentSpecialty = 'all';
 
 function initializeAnalytics(simId) {
     currentSimId = simId;
@@ -18,6 +19,7 @@ async function loadAnalyticsData() {
             analyticsData = result.data;
             createCharts();
             populateDoctorPerformance();
+            populateSpecialtyDropdown(); // Populate specialties on load
         } else {
             showError('Failed to load analytics data: ' + result.error);
         }
@@ -41,6 +43,13 @@ function setupEventListeners() {
     document.getElementById('chartTypeSelect').addEventListener('change', function() {
         console.log('Chart type changed to:', this.value);
         updateChartTypes(this.value);
+    });
+    
+    // Specialty filter
+    document.getElementById('specialtySelect').addEventListener('change', function() {
+        currentSpecialty = this.value;
+        console.log('Specialty filter changed to:', currentSpecialty);
+        updateDoctorsChart();
     });
     
     // Show/hide data series
@@ -73,7 +82,7 @@ function updateChartsWithFilters() {
     // Update doctors chart
     if (charts.doctors) {
         charts.doctors.data.labels = filteredStates.map(state => formatTimeLabel(state.sim_minutes));
-        charts.doctors.data.datasets[0].data = filteredStates.map(state => state.busy_doctors);
+        charts.doctors.data.datasets[0].data = getSpecialtyFilteredDoctorData(); // Use filtered data
         charts.doctors.update();
     }
     
@@ -164,12 +173,12 @@ function aggregateData(data, granularity) {
         aggregated[timeSlot].waiting_patients.push(item.waiting_patients || 0);
     });
     
-    // Convert to array and calculate averages
+    // Convert to array and calculate averages (and max for busy_doctors)
     const result = Object.values(aggregated).map(item => ({
         sim_minutes: item.sim_minutes,
         patients_total: Math.round(item.patients_total.reduce((a, b) => a + b, 0) / item.patients_total.length),
         patients_treated: Math.round(item.patients_treated.reduce((a, b) => a + b, 0) / item.patients_treated.length),
-        busy_doctors: Math.round(item.busy_doctors.reduce((a, b) => a + b, 0) / item.busy_doctors.length),
+        busy_doctors: Math.max(...item.busy_doctors), // Use max instead of average for busy doctors
         waiting_patients: Math.round(item.waiting_patients.reduce((a, b) => a + b, 0) / item.waiting_patients.length)
     })).sort((a, b) => a.sim_minutes - b.sim_minutes);
     
@@ -183,6 +192,7 @@ function createCharts() {
     createHourlyChart();
     createDiseaseChart();
     createDailyChart();
+    populateSpecialtyDropdown();
 }
 
 function createPatientsChart() {
@@ -255,8 +265,8 @@ function createDoctorsChart() {
     const data = {
         labels: analyticsData.hospital_states.map(state => formatTimeLabel(state.sim_minutes)),
         datasets: [{
-            label: 'Busy Doctors',
-            data: analyticsData.hospital_states.map(state => state.busy_doctors),
+            label: 'Peak Busy Doctors',
+            data: getSpecialtyFilteredDoctorData(),
             borderColor: 'rgb(255, 159, 64)',
             backgroundColor: 'rgba(255, 159, 64, 0.2)',
             tension: 0.1,
@@ -291,7 +301,7 @@ function createDoctorsChart() {
                 },
                 title: {
                     display: true,
-                    text: 'Doctor Utilization Over Time'
+                    text: 'Peak Doctor Utilization Over Time - All Specialties'
                 }
             }
         }
@@ -496,6 +506,26 @@ function populateDoctorPerformance() {
     });
 }
 
+function populateSpecialtyDropdown() {
+    if (!analyticsData || !analyticsData.doctor_performance) return;
+    
+    const specialties = [...new Set(analyticsData.doctor_performance.map(doctor => doctor.doctor_specialty))];
+    const specialtySelect = document.getElementById('specialtySelect');
+    
+    // Clear existing options except "All Specialties"
+    specialtySelect.innerHTML = '<option value="all">All Specialties</option>';
+    
+    // Add each specialty
+    specialties.forEach(specialty => {
+        const option = document.createElement('option');
+        option.value = specialty;
+        option.textContent = specialty;
+        specialtySelect.appendChild(option);
+    });
+    
+    console.log('Available specialties:', specialties);
+}
+
 function calculateEfficiencyScore(doctor) {
     // Simple efficiency calculation - could be improved
     const avgTreatmentTime = doctor.avg_treatment_time;
@@ -548,4 +578,77 @@ function formatTimeLabel(minutes) {
 function showError(message) {
     console.error(message);
     alert(message);
+}
+
+function getSpecialtyFilteredDoctorData() {
+    if (!analyticsData || currentSpecialty === 'all') {
+        return analyticsData.hospital_states.map(state => state.busy_doctors);
+    }
+    
+    // We need to calculate busy doctors by specialty from available data
+    // Since we don't have specialty-specific busy doctor data in hospital_states,
+    // we'll need to estimate based on doctor performance data
+    const specialtyDoctors = analyticsData.doctor_performance.filter(
+        doctor => doctor.doctor_specialty === currentSpecialty
+    );
+    
+    if (specialtyDoctors.length === 0) {
+        return analyticsData.hospital_states.map(() => 0);
+    }
+    
+    // Calculate maximum possible doctors in this specialty
+    const maxSpecialtyDoctors = specialtyDoctors.length;
+    
+    // Calculate proportion of doctors in this specialty
+    const totalDoctors = analyticsData.doctor_performance.length;
+    const specialtyProportion = specialtyDoctors.length / totalDoctors;
+    
+    // Estimate busy doctors for this specialty, ensuring we don't exceed the max
+    return analyticsData.hospital_states.map(state => 
+        Math.min(maxSpecialtyDoctors, Math.round(state.busy_doctors * specialtyProportion))
+    );
+}
+
+function updateDoctorsChart() {
+    if (!charts.doctors || !analyticsData) return;
+    
+    const timeRange = document.getElementById('timeRangeSelect').value;
+    const granularity = document.getElementById('granularitySelect').value;
+    
+    // Filter and aggregate data
+    let filteredStates = getFilteredData(analyticsData.hospital_states, timeRange);
+    filteredStates = aggregateData(filteredStates, granularity);
+    
+    // Update chart data
+    const labels = filteredStates.map(state => formatTimeLabel(state.sim_minutes));
+    charts.doctors.data.labels = labels;
+    
+    // Apply specialty filter to doctor data
+    let doctorData;
+    if (currentSpecialty === 'all') {
+        doctorData = filteredStates.map(state => state.busy_doctors);
+    } else {
+        // Calculate specialty-specific data for filtered timeframe
+        const specialtyDoctors = analyticsData.doctor_performance.filter(
+            doctor => doctor.doctor_specialty === currentSpecialty
+        );
+        const maxSpecialtyDoctors = specialtyDoctors.length;
+        const totalDoctors = analyticsData.doctor_performance.length;
+        const specialtyProportion = specialtyDoctors.length / totalDoctors;
+        
+        doctorData = filteredStates.map(state => 
+            Math.min(maxSpecialtyDoctors, Math.round(state.busy_doctors * specialtyProportion))
+        );
+    }
+    
+    charts.doctors.data.datasets[0].data = doctorData;
+    
+    // Update chart title and label
+    const specialtyLabel = currentSpecialty === 'all' ? 'All Specialties' : currentSpecialty;
+    charts.doctors.options.plugins.title.text = `Peak Doctor Utilization Over Time - ${specialtyLabel}`;
+    charts.doctors.data.datasets[0].label = currentSpecialty === 'all' ? 'Peak Busy Doctors' : `Peak Busy ${currentSpecialty} Doctors`;
+    
+    charts.doctors.update();
+    
+    console.log(`Updated doctors chart for specialty: ${currentSpecialty}`);
 }

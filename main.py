@@ -160,6 +160,10 @@ def main():
     print("  python main.py --ml --predict --sim-id=1")
     print("  python main.py --all --doctors=25 --rate=15")
     print()
+    print("For trajectory generation:")
+    print("  python -m src.simulation.sim_utils trajectories 1 --num=50 --days=30")
+    print("  python -m src.simulation.sim_utils analyze 1")
+    print()
     print("For detailed help: python main.py --help")
     print()
     
@@ -171,10 +175,11 @@ def main():
     print("3. ML operations only")
     print("4. All components")
     print("5. Generate documentation")
-    print("6. Exit")
+    print("6. Test trajectory generation")
+    print("7. Exit")
     
     try:
-        choice = input("\nEnter your choice (1-6): ").strip()
+        choice = input("\nEnter your choice (1-7): ").strip()
     except KeyboardInterrupt:
         print("\nExiting.")
         return
@@ -205,6 +210,9 @@ def main():
             dash_proc.terminate()
     elif choice == "5":
         cmd = [sys.executable, "src/utils/generate_docs.py"]
+        subprocess.run(cmd)
+    elif choice == "6":
+        cmd = [sys.executable, "test_trajectories.py"]
         subprocess.run(cmd)
     else:
         print("Goodbye!")

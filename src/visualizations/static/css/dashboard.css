@@ -533,3 +533,91 @@ canvas {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Trajectory-specific styles */
+.trajectory-overview {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.trajectory-metrics .metric-card {
+    transition: all 0.3s ease;
+}
+
+.trajectory-metrics .metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.confidence-chart-container {
+    position: relative;
+    height: 400px;
+}
+
+.trajectory-selector {
+    border: 2px solid #e3f2fd;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+}
+
+.extreme-scenario {
+    border-left: 4px solid #28a745;
+    padding: 10px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 0 5px 5px 0;
+}
+
+.extreme-scenario.worst {
+    border-left-color: #dc3545;
+}
+
+.alert-sm {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.statistics-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-top: none;
+}
+
+.btn-group .btn {
+    font-size: 0.875rem;
+}
+
+.trajectory-status {
+    background: #e3f2fd;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Time scale controls specific styling */
+.btn-group[aria-label="Time Scale"] .btn {
+    min-width: 60px;
+}
+
+.btn-group[aria-label="Time Scale"] .btn i {
+    margin-right: 4px;
+}
+
+.btn-group[aria-label="Metric Selection"] .btn {
+    min-width: 80px;
+}
+
+@media (max-width: 768px) {
+    .confidence-chart-container {
+        height: 300px;
+    }
+    
+    .btn-group .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}

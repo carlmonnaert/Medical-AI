@@ -27,6 +27,9 @@
                 <a class="nav-link" href="/predictions/{{ sim_id }}" id="predictionsLink">
                     <i class="fas fa-brain"></i> Predictions
                 </a>
+                <a class="nav-link" href="/trajectories/{{ sim_id }}" id="trajectoriesLink">
+                    <i class="fas fa-project-diagram"></i> Trajectories
+                </a>
                 <a class="nav-link" href="/">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
@@ -69,6 +72,14 @@
                                     <option value="line">Line Chart</option>
                                     <option value="bar">Bar Chart</option>
                                     <option value="area">Area Chart</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Doctor Specialty Filter</label>
+                                <select class="form-select" id="specialtySelect">
+                                    <option value="all">All Specialties</option>
                                 </select>
                             </div>
                         </div>

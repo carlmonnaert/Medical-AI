@@ -2,7 +2,7 @@
 
 ## Introduction - 1min
 
-**Contenu du projet :**  Bonjour, notre projet développe un tableau de bord interactif pour suivre en temps réel l'activité hospitalière : arrivées de patients, pathologies et disponibilité des médecins. Nous avons. utilisé l'IA pour déterminer les périodes où l'hôpital risque d'être saturé. 
+**Contenu du projet :**  Bonjour, notre projet développe un tableau de bord interactif pour suivre en temps réel l'activité hospitalière : arrivées de patients, pathologies et disponibilité des médecins. Nous avons utilisé l'IA pour déterminer les périodes où l'hôpital risque d'être saturé. 
 
 ---
 

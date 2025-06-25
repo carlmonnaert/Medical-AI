@@ -50,8 +50,10 @@ function setupEventListeners() {
  * Load predictions from the API
  */
 async function loadPredictions(showLoading = true) {
+    let modal = null;
+    
     if (showLoading) {
-        showLoadingModal('Generating predictions...');
+        modal = showLoadingModal('Generating predictions...');
     }
     
     try {
@@ -70,14 +72,21 @@ async function loadPredictions(showLoading = true) {
         updatePredictionDisplay();
         
         if (showLoading) {
+            // Force hide modal immediately after data is loaded and display is updated
             hideLoadingModal();
+            // Also try again after a very short delay as backup
+            setTimeout(() => {
+                hideLoadingModal();
+            }, 50);
         }
         
     } catch (error) {
         console.error('Error loading predictions:', error);
         
         if (showLoading) {
-            hideLoadingModal();
+            setTimeout(() => {
+                hideLoadingModal();
+            }, 100);
         }
         
         showErrorAlert(`Failed to load predictions: ${error.message}`);
@@ -448,14 +457,57 @@ function getProgressBarClass(probability) {
 
 function showLoadingModal(text) {
     document.getElementById('loadingText').textContent = text;
-    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    const modalElement = document.getElementById('loadingModal');
+    const modal = new bootstrap.Modal(modalElement);
     modal.show();
+    
+    // Safety mechanism: force hide modal after 10 seconds maximum
+    setTimeout(() => {
+        hideLoadingModal();
+        console.warn('Modal auto-hidden after 10 seconds safety timeout');
+    }, 10000);
+    
+    return modal;
 }
 
 function hideLoadingModal() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
-    if (modal) {
-        modal.hide();
+    try {
+        const modalElement = document.getElementById('loadingModal');
+        if (modalElement) {
+            // Force hide modal immediately
+            modalElement.style.display = 'none';
+            modalElement.classList.remove('show', 'fade');
+            modalElement.setAttribute('aria-hidden', 'true');
+            modalElement.removeAttribute('aria-modal');
+            modalElement.removeAttribute('role');
+            
+            // Force remove backdrop
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Reset body
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Try Bootstrap's hide method as secondary cleanup
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.dispose(); // Completely destroy the modal instance
+            }
+            
+            console.log('Modal forcefully hidden');
+        }
+    } catch (error) {
+        console.error('Error hiding modal:', error);
+        // Ultimate fallback
+        const modalElement = document.getElementById('loadingModal');
+        if (modalElement) {
+            modalElement.style.display = 'none !important';
+            modalElement.style.visibility = 'hidden';
+        }
+        document.body.style.overflow = 'auto';
+        document.body.classList.remove('modal-open');
     }
 }
 

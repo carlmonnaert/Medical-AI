@@ -74,3 +74,7 @@ La partie apprentissage de notre algorithme consite à ajuster en fonction des d
 Ainsi, pour chaque moment de la journée, et en fonction des saisonalités, les paramètres de nos lois de Poisson décrivant l'arrivée des patients sont différentes, tout comme les paramètres des lois décrivant la probabilité que chaque maladie soit contractée.
 
 Ainsi, en simulant un échantillon conséquent de données (qui en pratique serait disponible dans un hopital), nous pouvons ajuster au mieux les paramètres de nos lois pour décrire de manière précise l'écolution de la fréquentation des hopitaux et des disponibilités du personnel soignant.
+
+## Répartition du travail - 1min - Lukas ?
+
+## Difficultés rencontrées - 2min - Lukas + qqn d'autre ?

@@ -71,6 +71,39 @@ Notre projet utilise *SQLite* comme base de données principale, optimisée pour
 
 Ensuite pour que ces données soient accessibles depuis l'interface, mise en place d'une API RESTful avec Flask, qui permet ensuite à Lukas, qui gère l'app web en tant que telle, de posséder les données avec un format "standardiser", pour ensuite implémentater la logique de visualisation.
 
+## Dashboard - 2min - Lukas
+
+Tkinter pour un affichage local :
+
+  -J’ai utilisé Tkinter pour afficher les premières données de simulation.
+
+  -Cela m’a permis de valider rapidement le format et la mise à jour en temps réel des données.
+
+Migration vers Dash pour une version web :
+
+  -J’ai ensuite développé une première version du dashboard avec Dash.
+
+  -L’objectif était d’avoir une interface web interactive et accessible.
+
+Structuration et enrichissement du dashboard :
+
+  -J’ai organisé le dashboard en plusieurs pages et ajouté des graphes plus complets.
+
+  -Cela a permis une visualisation plus claire et plus ciblée des différents aspects de l’hôpital.
+
+Connexion à l’API Flask pour la simulation :
+
+  -J’ai intégré une API Flask pour récupérer les données du moteur de simulation.
+
+  -Ainsi, les données affichées sont toujours synchronisées avec l’état de la simulation.
+
+Intégration d’outils UI modernes :
+
+  -J’ai utilisé Bootstrap pour le design et Chart.js pour les graphiques.
+
+  -Le but était d’obtenir une interface responsive, moderne et agréable à utiliser.
+
+
 ## Machine Learning - 1min - Carl
 
 Après avoir testé des méthodes d'apprentissage comme les k plus proches voisins ou encore des régressions par réseaux de neurones, nous nous sommes finalement tournés vers une approche d'ensemble mieux adaptée à notre contexte hospitalier.

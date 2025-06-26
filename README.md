@@ -277,14 +277,14 @@ Un diagramme complet de la base de données :
 
 ```sql
 -- Résumé simulation
-SELECT simulation_id, COUNT(*) as patients, 
+SELECT simulation_id, COUNT(*) as patients,
        AVG(wait_time) as avg_wait
-FROM patient_treated 
+FROM patient_treated
 GROUP BY simulation_id;
 
 -- Périodes à risque
 SELECT datetime, patients_waiting, doctors_busy
-FROM hospital_state 
+FROM hospital_state
 WHERE patients_waiting > 20;
 ```
 
@@ -346,7 +346,7 @@ python src/run_ml.py [options]
 - **Bootstrap 5.1+** - UI (CDN)
 - **Font Awesome 6.0+** - Icônes (CDN)
 
-## Poster de présentation 
+## Poster de présentation
 ![poster](./img/poster-ia-medical.svg)
 
 ## Licence

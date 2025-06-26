@@ -12,6 +12,13 @@
 
 ## Répartition du travail - 1min - Lukas 
 
+Arsène a pris en charge la gestion des données, notamment la mise en place de la base de données SQLite et les échanges entre la simulation et le stockage.
+
+Carl a travaillé sur les aspects mathématiques du projet, en participant à la modélisation des processus hospitaliers.
+
+Maxence a également contribué à la simulation numérique, en codant les algorithmes permettant de reproduire le fonctionnement d’un hôpital.
+
+Je me suis occupé du développement du dashboard, en assurant l’affichage web des données et l’intégration graphique de l’interface.
 
 
 ## Mathématiques du modéle - 1min - Carl

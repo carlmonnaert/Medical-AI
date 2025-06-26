@@ -174,14 +174,24 @@ def api_analytics_data(sim_id: int):
     try:
         conn = get_db_connection()
         
-        # Get hospital state over time
+        # Get hospital state over time with proper ordering and precision
         hospital_states = conn.execute("""
             SELECT sim_minutes, patients_total, patients_treated, busy_doctors, 
                    waiting_patients, sim_time
             FROM hospital_state 
             WHERE sim_id = ? 
-            ORDER BY sim_minutes
+            ORDER BY sim_minutes ASC
         """, (sim_id,)).fetchall()
+        
+        print(f"Retrieved {len(hospital_states)} hospital state records for simulation {sim_id}")
+        if len(hospital_states) > 0:
+            print(f"Time range: {hospital_states[0]['sim_minutes']:.1f} to {hospital_states[-1]['sim_minutes']:.1f} minutes")
+            # Show a sample of the time differences to verify minute-level granularity
+            if len(hospital_states) > 1:
+                time_diffs = [hospital_states[i+1]['sim_minutes'] - hospital_states[i]['sim_minutes'] 
+                             for i in range(min(10, len(hospital_states)-1))]
+                print(f"Sample time differences (first 10): {time_diffs}")
+        
         
         # Get patient treatments by hour
         hourly_treatments = conn.execute("""

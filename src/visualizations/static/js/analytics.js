@@ -17,6 +17,33 @@ async function loadAnalyticsData() {
         
         if (result.success) {
             analyticsData = result.data;
+            
+            // Debug: Check the actual time intervals in the data
+            if (analyticsData.hospital_states && analyticsData.hospital_states.length > 1) {
+                const timeDiffs = [];
+                for (let i = 1; i < Math.min(20, analyticsData.hospital_states.length); i++) {
+                    const diff = analyticsData.hospital_states[i].sim_minutes - analyticsData.hospital_states[i-1].sim_minutes;
+                    timeDiffs.push(diff);
+                }
+                console.log('Time intervals in hospital_states data (first 20):', timeDiffs);
+                console.log('Min time interval:', Math.min(...timeDiffs), 'minutes');
+                console.log('Max time interval:', Math.max(...timeDiffs), 'minutes');
+                
+                // Smart granularity selection based on data size for performance
+                const dataPointCount = analyticsData.hospital_states.length;
+                console.log('Total data points:', dataPointCount);
+                
+                if (dataPointCount > 5000) {
+                    console.log('Large dataset detected, recommending day granularity for better performance');
+                    document.getElementById('granularitySelect').value = 'day';
+                } else if (dataPointCount > 1500) {
+                    console.log('Medium dataset detected, using hour granularity');
+                    document.getElementById('granularitySelect').value = 'hour';
+                } else {
+                    console.log('Small dataset, minute granularity available');
+                }
+            }
+            
             createCharts();
             populateDoctorPerformance();
             populateSpecialtyDropdown(); // Populate specialties on load
@@ -40,11 +67,6 @@ function setupEventListeners() {
         updateChartsWithFilters();
     });
     
-    document.getElementById('chartTypeSelect').addEventListener('change', function() {
-        console.log('Chart type changed to:', this.value);
-        updateChartTypes(this.value);
-    });
-    
     // Specialty filter
     document.getElementById('specialtySelect').addEventListener('change', function() {
         currentSpecialty = this.value;
@@ -66,9 +88,13 @@ function updateChartsWithFilters() {
     
     console.log('Applying filters - Time range:', timeRange, 'Granularity:', granularity);
     
-    // Filter hospital states data
+    // Filter hospital states data first
     let filteredStates = getFilteredData(analyticsData.hospital_states, timeRange);
+    console.log('After time filtering:', filteredStates.length, 'data points');
+    
+    // Then aggregate the filtered data
     filteredStates = aggregateData(filteredStates, granularity);
+    console.log('After aggregation:', filteredStates.length, 'data points');
     
     // Update patients chart
     if (charts.patients) {
@@ -82,25 +108,28 @@ function updateChartsWithFilters() {
     // Update doctors chart
     if (charts.doctors) {
         charts.doctors.data.labels = filteredStates.map(state => formatTimeLabel(state.sim_minutes));
-        charts.doctors.data.datasets[0].data = getSpecialtyFilteredDoctorData(); // Use filtered data
+        // For specialty filtering, we need to recalculate the doctor data
+        let doctorData;
+        if (currentSpecialty === 'all') {
+            doctorData = filteredStates.map(state => state.busy_doctors);
+        } else {
+            // Calculate specialty-specific data for filtered timeframe
+            const specialtyDoctors = analyticsData.doctor_performance.filter(
+                doctor => doctor.doctor_specialty === currentSpecialty
+            );
+            const maxSpecialtyDoctors = specialtyDoctors.length;
+            const totalDoctors = analyticsData.doctor_performance.length;
+            const specialtyProportion = specialtyDoctors.length / totalDoctors;
+            
+            doctorData = filteredStates.map(state => 
+                Math.min(maxSpecialtyDoctors, Math.round(state.busy_doctors * specialtyProportion))
+            );
+        }
+        charts.doctors.data.datasets[0].data = doctorData;
         charts.doctors.update();
     }
     
     console.log('Charts updated with', filteredStates.length, 'data points');
-}
-
-function updateChartTypes(newType) {
-    console.log('Updating chart types to:', newType);
-    
-    // Only update line/bar/area compatible charts (not pie/doughnut charts)
-    const compatibleCharts = ['patients', 'doctors', 'hourly', 'daily'];
-    
-    compatibleCharts.forEach(chartKey => {
-        if (charts[chartKey] && charts[chartKey].config.type !== 'doughnut') {
-            charts[chartKey].config.type = newType;
-            charts[chartKey].update();
-        }
-    });
 }
 
 function getFilteredData(data, timeRange) {
@@ -134,7 +163,23 @@ function getFilteredData(data, timeRange) {
 }
 
 function aggregateData(data, granularity) {
-    if (!data || granularity === 'minute') {
+    if (!data || data.length === 0) {
+        return data;
+    }
+    
+    // For minute granularity, return data as-is but potentially sampled for performance
+    if (granularity === 'minute') {
+        console.log('Using minute granularity - returning original data');
+        // More aggressive sampling for better performance
+        if (data.length > 3000) {
+            const sampleRate = Math.ceil(data.length / 1000);
+            console.log(`Large dataset: Sampling every ${sampleRate} points for performance (${data.length} -> ~${Math.ceil(data.length / sampleRate)} points)`);
+            return data.filter((_, index) => index % sampleRate === 0);
+        } else if (data.length > 1500) {
+            const sampleRate = Math.ceil(data.length / 800);
+            console.log(`Medium dataset: Light sampling every ${sampleRate} points for performance (${data.length} -> ~${Math.ceil(data.length / sampleRate)} points)`);
+            return data.filter((_, index) => index % sampleRate === 0);
+        }
         return data;
     }
     
@@ -151,6 +196,7 @@ function aggregateData(data, granularity) {
             stepSize = 1440; // 24 hours * 60 minutes
             break;
         default:
+            console.log('Unknown granularity, returning original data');
             return data;
     }
     
@@ -187,37 +233,50 @@ function aggregateData(data, granularity) {
 }
 
 function createCharts() {
-    createPatientsChart();
-    createDoctorsChart();
+    // Apply initial filtering and aggregation to avoid lag on first load
+    const timeRange = document.getElementById('timeRangeSelect')?.value || 'all';
+    const granularity = document.getElementById('granularitySelect')?.value || 'hour';
+    
+    // Filter and aggregate data for initial chart creation
+    let initialData = getFilteredData(analyticsData.hospital_states, timeRange);
+    initialData = aggregateData(initialData, granularity);
+    
+    console.log('Creating charts with', initialData.length, 'data points (aggregated from', analyticsData.hospital_states.length, 'original points)');
+    
+    createPatientsChart(initialData);
+    createDoctorsChart(initialData);
     createHourlyChart();
     createDiseaseChart();
     createDailyChart();
     populateSpecialtyDropdown();
 }
 
-function createPatientsChart() {
+function createPatientsChart(processedData = null) {
     const ctx = document.getElementById('patientsChart').getContext('2d');
     
+    // Use processed data if provided, otherwise fall back to raw data
+    const dataToUse = processedData || analyticsData.hospital_states;
+    
     const data = {
-        labels: analyticsData.hospital_states.map(state => formatTimeLabel(state.sim_minutes)),
+        labels: dataToUse.map(state => formatTimeLabel(state.sim_minutes)),
         datasets: [
             {
                 label: 'Total Patients',
-                data: analyticsData.hospital_states.map(state => state.patients_total),
+                data: dataToUse.map(state => state.patients_total),
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 tension: 0.1
             },
             {
                 label: 'Patients Treated',
-                data: analyticsData.hospital_states.map(state => state.patients_treated),
+                data: dataToUse.map(state => state.patients_treated),
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 tension: 0.1
             },
             {
                 label: 'Waiting Patients',
-                data: analyticsData.hospital_states.map(state => state.waiting_patients),
+                data: dataToUse.map(state => state.waiting_patients),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 tension: 0.1
@@ -259,14 +318,17 @@ function createPatientsChart() {
     });
 }
 
-function createDoctorsChart() {
+function createDoctorsChart(processedData = null) {
     const ctx = document.getElementById('doctorsChart').getContext('2d');
     
+    // Use processed data if provided, otherwise fall back to raw data
+    const dataToUse = processedData || analyticsData.hospital_states;
+    
     const data = {
-        labels: analyticsData.hospital_states.map(state => formatTimeLabel(state.sim_minutes)),
+        labels: dataToUse.map(state => formatTimeLabel(state.sim_minutes)),
         datasets: [{
             label: 'Peak Busy Doctors',
-            data: getSpecialtyFilteredDoctorData(),
+            data: dataToUse.map(state => state.busy_doctors), // Use the processed data directly
             borderColor: 'rgb(255, 159, 64)',
             backgroundColor: 'rgba(255, 159, 64, 0.2)',
             tension: 0.1,
@@ -567,11 +629,20 @@ function updatePatientsChart() {
 function formatTimeLabel(minutes) {
     const days = Math.floor(minutes / 1440);
     const hours = Math.floor((minutes % 1440) / 60);
+    const mins = Math.floor(minutes % 60);
     
-    if (days > 0) {
-        return `Day ${days}, ${hours}:00`;
+    // For minute-level granularity, show minutes when appropriate
+    const granularity = document.getElementById('granularitySelect')?.value || 'hour';
+    
+    if (granularity === 'minute' && days === 0 && hours < 24) {
+        // Show hours and minutes for minute-level data within first day
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    } else if (days > 0) {
+        // Show days, hours and minutes for longer periods
+        return `Day ${days}, ${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     } else {
-        return `${hours}:00`;
+        // Default format - hours and minutes
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     }
 }
 

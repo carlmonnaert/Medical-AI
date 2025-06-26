@@ -57,7 +57,10 @@ function displayHighWaitIncidents() {
         return;
     }
     
-    incidentsData.high_wait_incidents.slice(0, 20).forEach(incident => {
+    // Sort incidents by start time (most recent first)
+    const sortedWaitIncidents = [...incidentsData.high_wait_incidents].sort((a, b) => b.start_sim_minutes - a.start_sim_minutes);
+    
+    sortedWaitIncidents.forEach(incident => {
         const incidentEl = document.createElement('div');
         
         const severity = getSeverity(incident.max_waiting_patients, 'waiting');
@@ -97,7 +100,10 @@ function displayHighOccupancyIncidents() {
         return;
     }
     
-    incidentsData.high_occupancy_incidents.slice(0, 20).forEach(incident => {
+    // Sort incidents by start time (most recent first)
+    const sortedOccupancyIncidents = [...incidentsData.high_occupancy_incidents].sort((a, b) => b.start_sim_minutes - a.start_sim_minutes);
+    
+    sortedOccupancyIncidents.forEach(incident => {
         const incidentEl = document.createElement('div');
         const maxOccupancyRate = (incident.max_occupancy_rate * 100).toFixed(1);
         const avgOccupancyRate = (incident.avg_occupancy_rate * 100).toFixed(1);

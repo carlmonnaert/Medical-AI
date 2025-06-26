@@ -36,14 +36,15 @@ Sous ces hypothèses, les patients arrivent à des intervalles aléatoires tiré
 
 ## Simalution numérique - 2min - Maxence
 
-Étant donné que nous avons rencontré beaucoup de difficultés pour trouver des données propres et utilisable pour notre projet. Notre encadrant nous a invité a créer notre propre simulation de donnée pour avoir une base sur laquelle s’appuyer. L’objectif était simple, nous devions simuler
+Étant donné que nous avons rencontré beaucoup de difficultés pour trouver des données propres et utilisable pour notre projet. Notre encadrant nous a invité a créer notre propre simulation de donnée pour avoir une base sur laquelle s’appuyer. Cette approche nous permet de créer un dataset cohérent et contrôlé reproduisant fidèlement les dynamiques hospitalières réelles. L’objectif était simple, nous devions simuler
 
-- les différentes maladies fréquentes présentes dans les hôpitaux avec leurs saisonnalité et leurs durées moyennes de traitement
-- l’arrivée aléatoire des patients
-- les différentes spécialités des médecins
+- 26 maladies les plus fréquentes dans les hôpitaux avec leurs saisonnalité et leurs durées moyennes de traitement
+- Processus stochastiques d'arrivées des patiens
+- Médecins spécialisés avec files d'attente dédiées
 - la gestion des flux avec de le modéle de file d’attente que Carl vous a présenté
 
-Pour ce faire, nous avons 3 trois classes sur Python : **Hopital, Médecin et Personne **
+Pour ce faire, notre simulation, faite sur Python, utilise le framework SimPy pour implémenter un modèle à événements discrets avec un pas temporel fixe d'une minute. Et donc chaque minute, on va avoir une mse à jour de nos 3 classes  : **Hopital, Médecin et Personne **. 
+
 
 Concernant la classe **Médécin**, on y trouve que chaque médecin possède sa spécialité, sa propre file d'attente et son statut d'occupation, permettant une gestion réaliste des ressources.
 

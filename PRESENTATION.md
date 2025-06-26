@@ -10,6 +10,10 @@
 
 **Rendu final :** Nous mettons donc à disposition un outil de visualisation de données et d'anticipation de cas de crises utilisable quasi-immédiatement dans les hopitaux en "branchant" notre implémentation à la base de donnée de l'hopital.
 
+## Répartition du travail - 1min - Lukas ?
+
+
+
 ## Mathématiques du modéle - 1min - Carl
 **Hypothèses du modèle**
 Notre modèle consiste en une discrétisation du temps nous permettant de déterminer l'état de l'hopital à une période future en fonction de l'état actuel et de processus aléatoires.
@@ -85,6 +89,7 @@ Cette méthode ajuste séquentiellement ses paramètres en corrigeant les erreur
 En simulant un échantillon conséquent de données (qui en pratique serait disponible dans un hôpital), nous pouvons ajuster au mieux les paramètres de nos modèles pour décrire de manière précise l'évolution des situations critiques.
 La validation croisée à 5 plis nous assure une généralisation robuste, tandis que la gestion automatique des déséquilibres de classes garantit une détection fiable même des événements rares.
 
-## Répartition du travail - 1min - Lukas ?
 
 ## Difficultés rencontrées - 2min - Lukas + qqn d'autre ?
+
+## Présentation du projet 

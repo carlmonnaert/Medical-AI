@@ -27,7 +27,7 @@ Un système complet de simulation hospitalière intégrant une simulation par é
 - **Détection d’incidents** : Identification automatique des problèmes opérationnels
 - **Design responsive** : Compatible PC, tablette, mobile
 
-### Prédictions IA - TODO
+### Prédictions IA
 
 - **Prédiction de dangers** : Modèles ML pour prédire surcharge, longues attentes, sous-effectif
 - **Prévision multi-horizon** : De 1h à 1 semaine à l’avance
@@ -75,7 +75,8 @@ ia-medical/
 │   │   │   ├── analytics.html
 │   │   │   ├── incidents.html
 │   │   │   ├── realtime.html
-│   │   │   └── predictions.html # Page HTML pour les prédictions
+│   │   │   ├── predictions.html
+│   │   │   └── trajectories.html
 │   │   └── static/
 │   │       ├── css/
 │   │       │   └── dashboard.css
@@ -84,7 +85,8 @@ ia-medical/
 │   │           ├── analytics.js
 │   │           ├── incidents.js
 │   │           ├── realtime.js
-│   │           └── predictions.js
+│   │           ├── predictions.js
+│   │           └── trajectories.js
 │   ├── run_simulation.py   # Lancement simulation
 │   ├── run_dashboard.py    # Lancement dashboard
 │   ├── run_ml.py           # Opérations ML

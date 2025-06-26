@@ -120,6 +120,18 @@
 
   - **(Maxence et Arsène)** : Création du [poster](./img/poster-ia-medical.svg)
 
+## 23/06
+
+  - **(Maxence et Carl)** : Réunion pour l'implémentation de la logique de simulation de trajectoires en fonction des données de passées. Simuler Monte Carlo pour avoir un interval de confiance sur la stabilité du systéme.  
+  - **(Arsène)** : Création de l'option de création de trajectoires futurs en fonction des données du passé.
+
+## 24/06
+    - **(Arsène)** : Finalisation de la feature "trajectories".
+
+# 25/06
+    - **(Arsène)** : Déploiement (merge sur la branche `main`) des dernières mises à jour, correction des bugs de l'interface.
+    - **(Maxence et Arsène)** : Travail sur la présentation finale.
+
 
 
 

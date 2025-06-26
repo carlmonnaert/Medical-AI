@@ -8,12 +8,26 @@
 
 **Objectifs du projet :**  L'objectif final de notre projet est de créer un outil qui aide les gestionnaires d'hopitaux à mieux organiser les ressources, anticiper les moments de forte affluence et optimiser la prise en charge des patients en s'appuyant sur les données réelles de leurs hôpital.
 
+**Rendu final :** Nous mettons donc à disposition un outil de visualisation de données et d'anticipation de cas de crises utilisable quasi-immédiatement dans les hopitaux en "branchant" notre implémentation à la base de donnée de l'hopital.
+
 ## Mathématiques du modéle - 1min - Carl 
+**Hypothèses du modèle**
+Notre modèle consiste en une discrétisation du temps nous permettant de déterminer l'état de l'hopital à une période future en fonction de l'état actuel et de processus aléatoires.
+### Hypothèse 1 :
+$\text{L'écart entre deux arrivées de patients suit une loi de Poisson.}$
+\
+Ce résultat est connu pour être issu d'observations faites pour des stations recevant des appels téléphoniques, et convient également pour des arrivées en hôpital.
 
 
+On note $ X \sim \mathcal{P}(\lambda) $\
+Si $\space\forall n \in \mathbb{N}\space\space\space\space  \mathbb{P}(X=n) = \frac{\lambda^n}{n!}e^{-\lambda}$
+### Hypothèse 2 :
+$\text{Le pas de temps de la simulation doit être tel que :}$
+$$dt \ll \frac{1}{\lambda}$$
+Cette condition garanti que la loi simulée est effectivement une loi de poisson.
+Si dt est trop grand, le temps minimal entre deux arrivées est donc de $dt$ et la loi n'est plus un loi de poisson.
 
-
-
+Sous ces hypothèses, les patients arrivent à des intervalles aléatoires tirés selon une loi de Poisson, et sont ensuite libérés avec une probabilité dépenant de la maladie pour laquelle ils consultent, après avoir consulté le médecin adéquat.
 
 ## Simalution numérique - 2min - Maxence 
 
@@ -53,6 +67,10 @@ Ensuite pour que ces données soient accessibles depuis l'interface, mise en pla
 
 ## Machine Learning - 1min - Carl 
 
+Après avoir testé des mathodes d'apprentissage comme les k plus proches voisins ou encore des régressions par réseaux de neuronnes, nous nous sommes finalement tournés vers une méthode d'apprentissage mieux adaptée à notre usage.
 
+La partie apprentissage de notre algorithme consite à ajuster en fonction des données en entrée les paramètres de nos lois aléatoires de Poisson.
 
+Ainsi, pour chaque moment de la journée, et en fonction des saisonalités, les paramètres de nos lois de Poisson décrivant l'arrivée des patients sont différentes, tout comme les paramètres des lois décrivant la probabilité que chaque maladie soit contractée.
 
+Ainsi, en simulant un échantillon conséquent de données (qui en pratique serait disponible dans un hopital), nous pouvons ajuster au mieux les paramètres de nos lois pour décrire de manière précise l'écolution de la fréquentation des hopitaux et des disponibilités du personnel soignant.

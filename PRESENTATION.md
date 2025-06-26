@@ -2,7 +2,7 @@
 
 ## Introduction - 1min
 
-**Contenu du projet :**  Bonjour, notre projet développe un tableau de bord interactif pour suivre en temps réel l'activité hospitalière : arrivées de patients, pathologies et disponibilité des médecins. Nous avons utilisé l'IA pour déterminer les périodes où l'hôpital risque d'être saturé. 
+**Contenu du projet :**  Bonjour, notre projet développe un tableau de bord interactif pour suivre en temps réel l'activité hospitalière : arrivées de patients, pathologies et disponibilité des médecins. Nous avons utilisé l'IA pour déterminer les périodes où l'hôpital risque d'être saturé.
 
 ---
 
@@ -10,7 +10,7 @@
 
 **Rendu final :** Nous mettons donc à disposition un outil de visualisation de données et d'anticipation de cas de crises utilisable quasi-immédiatement dans les hopitaux en "branchant" notre implémentation à la base de donnée de l'hopital.
 
-## Mathématiques du modéle - 1min - Carl 
+## Mathématiques du modéle - 1min - Carl
 **Hypothèses du modèle**
 Notre modèle consiste en une discrétisation du temps nous permettant de déterminer l'état de l'hopital à une période future en fonction de l'état actuel et de processus aléatoires.
 ### Hypothèse 1 :
@@ -29,13 +29,13 @@ Si dt est trop grand, le temps minimal entre deux arrivées est donc de $dt$ et 
 
 Sous ces hypothèses, les patients arrivent à des intervalles aléatoires tirés selon une loi de Poisson, et sont ensuite libérés avec une probabilité dépenant de la maladie pour laquelle ils consultent, après avoir consulté le médecin adéquat.
 
-## Simalution numérique - 2min - Maxence 
+## Simalution numérique - 2min - Maxence
 
-Étant donné que nous avons rencontré beaucoup de difficultés pour trouver des données propres et utilisable pour notre projet. Notre encadrant nous a invité a créer notre propre simulation de donnée pour avoir une base sur laquelle s’appuyer. L’objectif était simple, nous devions simuler 
+Étant donné que nous avons rencontré beaucoup de difficultés pour trouver des données propres et utilisable pour notre projet. Notre encadrant nous a invité a créer notre propre simulation de donnée pour avoir une base sur laquelle s’appuyer. L’objectif était simple, nous devions simuler
 
 - les différentes maladies fréquentes présentes dans les hôpitaux avec leurs saisonnalité et leurs durées moyennes de traitement
 - l’arrivée aléatoire des patients
-- les différentes spécialités des médecins 
+- les différentes spécialités des médecins
 - la gestion des flux avec de le modéle de file d’attente que Carl vous a présenté
 
 Pour ce faire, nous avons 3 trois classes sur Python : **Hopital, Médecin et Personne **
@@ -46,7 +46,7 @@ Dans la classe **Personne**, on crée des arrivées de patients suivent une loi 
 
 Dans la classe **Hopital**, on gére la simulation qui avance par pas de 1 minute, avec suivi horaire, journalier et mensuel. Les temps de traitement suivent des lois exponentielles basées sur les durées moyennes par pathologie.
 
-Au sorti de la simulation, le système génère automatiquement 5 fichiers CSV : **données horaires détaillées, statistiques journalières par pathologie, traitements effectués, bilans mensuels et métriques globales de performance hospitalière** qui seront transféré à Arsene et Lukas pour le dashboard. 
+Au sorti de la simulation, le système met à jour la bases de données: **données horaires détaillées, statistiques journalières par pathologie, traitements effectués, bilans mensuels et métriques globales de performance hospitalière** qui seront transféré à Arsene et Lukas pour le dashboard.
 
 
 
@@ -65,15 +65,25 @@ Notre projet utilise *SQLite* comme base de données principale, optimisée pour
 
 Ensuite pour que ces données soient accessibles depuis l'interface, mise en place d'une API RESTful avec Flask, qui permet ensuite à Lukas, qui gère l'app web en tant que telle, de posséder les données avec un format "standardiser", pour ensuite implémentater la logique de visualisation.
 
-## Machine Learning - 1min - Carl 
+## Machine Learning - 1min - Carl
 
-Après avoir testé des mathodes d'apprentissage comme les k plus proches voisins ou encore des régressions par réseaux de neuronnes, nous nous sommes finalement tournés vers une méthode d'apprentissage mieux adaptée à notre usage.
+Après avoir testé des méthodes d'apprentissage comme les k plus proches voisins ou encore des régressions par réseaux de neurones, nous nous sommes finalement tournés vers une approche d'ensemble mieux adaptée à notre contexte hospitalier.
 
-La partie apprentissage de notre algorithme consite à ajuster en fonction des données en entrée les paramètres de nos lois aléatoires de Poisson.
+Notre système combine Random Forest et Gradient Boosting, deux méthodes d'ensemble qui se complètent parfaitement pour notre cas d'usage.
 
-Ainsi, pour chaque moment de la journée, et en fonction des saisonalités, les paramètres de nos lois de Poisson décrivant l'arrivée des patients sont différentes, tout comme les paramètres des lois décrivant la probabilité que chaque maladie soit contractée.
+### Random Forest pour la Classification des Dangers
+La partie apprentissage de notre algorithme consiste à ajuster, en fonction des données historiques, les paramètres de nos arbres de décision. Chaque arbre apprend à reconnaître des patterns spécifiques :
+    - Patterns temporels (heures de pointe, week-ends)
+    - Corrélations entre charge patient et disponibilité médecin
+    - Seuils critiques propres à chaque type de danger
 
-Ainsi, en simulant un échantillon conséquent de données (qui en pratique serait disponible dans un hopital), nous pouvons ajuster au mieux les paramètres de nos lois pour décrire de manière précise l'écolution de la fréquentation des hopitaux et des disponibilités du personnel soignant.
+Ainsi, pour chaque situation hospitalière, et en fonction des contextes temporels, les 100 arbres votent ensemble pour déterminer la probabilité de chaque type de danger.
+
+### Gradient Boosting pour les Prédictions Numériques
+Cette méthode ajuste séquentiellement ses paramètres en corrigeant les erreurs des prédicteurs précédents. Elle est adaptée pour prédire les valeurs continues comme les temps d'attente futurs ou l'affluence de patients.
+
+En simulant un échantillon conséquent de données (qui en pratique serait disponible dans un hôpital), nous pouvons ajuster au mieux les paramètres de nos modèles pour décrire de manière précise l'évolution des situations critiques.
+La validation croisée à 5 plis nous assure une généralisation robuste, tandis que la gestion automatique des déséquilibres de classes garantit une détection fiable même des événements rares.
 
 ## Répartition du travail - 1min - Lukas ?
 

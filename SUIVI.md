@@ -126,17 +126,19 @@
   - **(Arsène)** : Création de l'option de création de trajectoires futurs en fonction des données du passé.
 
 ## 24/06
-    - **(Arsène)** : Finalisation de la feature "trajectories".
+
+  - **(Arsène)** : Finalisation de la feature "trajectories".
 
 # 25/06
-    - **(Arsène)** : Déploiement (merge sur la branche `main`) des dernières mises à jour, correction des bugs de l'interface.
-    - **(Maxence et Arsène)** : Travail sur la présentation finale.
 
+  - **(Arsène)** : Déploiement (merge sur la branche `main`) des dernières mises à jour, correction des bugs de l'interface.
+  - **(Maxence et Arsène)** : Travail sur la présentation finale.
 
+# 26/06
 
+  - **(Tous)** : Mise en commun du pitch/présentation de notre projet, mise au point sur certains points techniques.
 
+# 27/06
 
-
-
-
+  - **(Tous)** : Présentation du projet aux encadrants, aux camarades.
 

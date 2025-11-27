@@ -1,5 +1,5 @@
 # Medical-AI: Hospital Simulation & AI Prediction System
-**Cliquez ici pour la [🇫🇷 version française](README.md):**
+**Cliquez ici pour la [🇫🇷 version française](README.fr.md):**
 > ARTISHOW - Telecom Paris
 > Carl MONNAERT, Maxence GUINZIEMBA-PROKOP, Arsène MALLET, Lukas TABOURI
 

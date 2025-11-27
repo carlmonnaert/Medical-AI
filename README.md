@@ -1,76 +1,76 @@
-[🇬🇧 English version](README.en.md)
-# ia-medical : Système de Simulation Hospitalière & Prédiction IA
-
+# Medical-AI: Hospital Simulation & AI Prediction System
+**Cliquez ici pour la [🇫🇷 version française](README.fr.md):**
 > ARTISHOW - Telecom Paris
-> Maxence GUINZIEMBA-PROKOP, Arsène MALLET, Carl MONNAERT, Lukas TABOURI
+> Carl MONNAERT, Maxence GUINZIEMBA-PROKOP, Arsène MALLET, Lukas TABOURI
 
 ---
 
 > [!CAUTION]
-> Le projet est encore en cours de développement.
-> Pour suivre l'avancement indicatif de notre projet, voir le [planning](./PLANNING.md)
+> The project is still under development.
+> To follow the indicative progress of our project, see the [planning](./PLANNING.md)
 
-Un système complet de simulation hospitalière intégrant une simulation par événements discrets, une surveillance en temps réel, des prédictions par apprentissage automatique et des dashboards interactifs.
+## Description
 
-## Fonctionnalités
+A comprehensive hospital simulation system integrating discrete event simulation, real-time monitoring, machine learning predictions and interactive dashboards.
 
-### Simulation principale
+## Features
 
-- **Simulation par événements discrets** : Modélisation réaliste des opérations hospitalières (arrivées, traitements, planification)
-- **Multi-spécialités** : Différentes spécialités médicales avec caractéristiques de traitement variées
-- **Gestion dynamique des ressources** : Allocation intelligente des médecins et optimisation des flux patients
-- **Patrons patients réalistes** : Arrivées dépendantes du temps et événements spéciaux
+### Main simulation
 
-### Dashboard interactifs
+- **Discrete event simulation**: Realistic modelling of hospital operations (arrivals, treatments, planning)
+- **Multi-specialities**: Different medical specialities with varying treatment characteristics
+- **Dynamic resource management**: Intelligent allocation of doctors and optimisation of patient flows
+- **Realistic patient patterns**: Time-dependent arrivals and special events
 
-- **Surveillance temps réel** : Statistiques hospitalières en direct avec rafraîchissement automatique
-- **Tableau analytique** : Analyse des flux patients, temps d’attente, utilisation des ressources
-- **Détection d’incidents** : Identification automatique des problèmes opérationnels
-- **Design responsive** : Compatible PC, tablette, mobile
+### Interactive dashboards
 
-### Prédictions IA
+- **Real-time monitoring**: Live hospital statistics with automatic refresh
+- **Analytical table**: Analysis of patient flows, waiting times, resource utilisation
+- **Incident detection**: Automatic identification of operational problems
+- **Responsive design**: Compatible with PCs, tablets and mobile devices
 
-- **Prédiction de dangers** : Modèles ML pour prédire surcharge, longues attentes, sous-effectif
-- **Prévision multi-horizon** : De 1h à 1 semaine à l’avance
-- **Évaluation des risques** : Score de danger en temps réel avec indicateurs visuels
-- **Analytique prédictive** : Prédiction des volumes futurs et des temps d’attente
+### AI predictions
+- **Hazard prediction**: ML models to predict overload, long waits, understaffing
+- **Multi-horizon forecasting**: From 1 hour to 1 week in advance
+- **Risk assessment**: Real-time hazard score with visual indicators
+- **Predictive analytics**: Prediction of future volumes and waiting times
 
-### Analyse de données
+### Data analysis
 
-- **Visualisations interactives** : Graphiques dynamiques (Chart.js)
-- **Métriques de performance** : Efficacité des médecins, satisfaction patient, utilisation système
-- **Analyse de tendances** : Historique et variations saisonnières
-- **Trajectoires multiples** : Génération de scénarios alternatifs basés sur l'historique
+- **Interactive visualisations**: Dynamic graphs (Chart.js)
+- **Performance metrics**: Doctor efficiency, patient satisfaction, system usage
+- **Trend analysis**: History and seasonal variations
+- **Multiple trajectories**: Generation of alternative scenarios based on history
 
-### Génération de trajectoires
+### Trajectory generation
 
-Le système peut générer des trajectoires multiples pour explorer différents scénarios futurs :
+The system can generate multiple trajectories to explore different future scenarios:
 
 ```bash
-# Générer 50 trajectoires de 30 jours pour la simulation 1
+# Generate 50 30-day trajectories for simulation 1
 python -m src.simulation.sim_utils trajectories 1 --num=50 --days=30
 
-# Analyser les résultats
-python -m src.simulation.sim_utils analyze 1
+# Analyse the results
+python -m src.simulation.sim_utils analyse 1
 
-# Voir les résultats dans le dashboard
-# Accéder à http://localhost:8080/trajectories/1
+# View the results in the dashboard
+# Go to http://localhost:8080/trajectories/1
 ```
 
-**Conditions requises** : La simulation de base doit avoir au moins 1 mois de données.
+**Requirements**: The base simulation must have at least 1 month of data.
 
-## Architecture du système
+## System architecture
 
 ```plain
 ia-medical/
-├── main.py                    # Point d'entrée principal
+├── main.py                    # Main entry point
 ├── src/
-│   ├── simulation/           # Moteur de simulation
-│   ├── ml/                  # Modèles de machine learning
-│   ├── data/                # Gestion des données et base
-│   ├── visualizations/     # Tableau de bord web et UI
-│   │   ├── dashboard.py         # Application Flask et routes API
-│   │   ├── predictions.py       # Endpoints Flask pour les prédictions IA
+│   ├── simulation/           # Simulation engine
+│   ├── ml/                  # Machine learning models
+│   ├── data/                # Database handling
+│   ├── visualizations/     # Web dashboard and UI
+│   │   ├── dashboard.py         # Flask software and API routes
+│   │   ├── predictions.py       # Flask endpoint pour for AI forecasting
 │   │   ├── templates/
 │   │   │   ├── index.html
 │   │   │   ├── analytics.html
@@ -88,269 +88,263 @@ ia-medical/
 │   │           ├── realtime.js
 │   │           ├── predictions.js
 │   │           └── trajectories.js
-│   ├── run_simulation.py   # Lancement simulation
-│   ├── run_dashboard.py    # Lancement dashboard
-│   ├── run_ml.py           # Opérations ML
-│   └── config.py           # Paramètres
+│   ├── run_simulation.py   # Simulation starting
+│   ├── run_dashboard.py    # Dashboard starting
+│   ├── run_ml.py           # Machine learning operations
+│   └── config.py           # Parameters
 ├── requirements.txt
 └── README.md
 ```
-
-## Démarrage rapide
+## Quick Start
 
 ### Installation
 
 ```bash
-# Cloner le dépôt
+# Clone the repository
 git clone <repository-url>
 cd ia-medical
 
-# Installer les dépendances
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Utilisation de base
+### Basic usage
 
 ```bash
-# Lancer simulation + dashboard (recommandé)
+# Run simulation + dashboard (recommended)
 python main.py --simulation --dashboard --doctors=25 --rate=15
 
-# Ou lancer les composants séparément :
+# Or run the components separately:
 python main.py --simulation --doctors=20 --duration=5
 python main.py --dashboard --port=8080
 python main.py --ml --train
 python main.py --ml --predict --sim-id=1
 
-# Générer la documentation
+# Generate documentation
 python main.py --docs
 ```
 
-### Accès au tableau de bord
+### Accessing the dashboard
 
-Une fois lancé, accédez à l’interface web :
+Once launched, access the web interface:
 
-- **Tableau de bord principal** : `http://localhost:8080`
-- **Analytique** : `http://localhost:8080/analytics/{sim_id}`
-- **Prédictions IA** : `http://localhost:8080/predictions/{sim_id}`
-- **Temps réel** : `http://localhost:8080/realtime/{sim_id}`
-- **Incidents** : `http://localhost:8080/incidents/{sim_id}`
-- **Trajectoires** : `http://localhost:8080/trajectories/{sim_id}`
+- **Main dashboard**: `http://localhost:8080`
+- **Analytics**: `http://localhost:8080/analytics/{sim_id}`
+- **AI predictions**: `http://localhost:8080/predictions/{sim_id}`
+- **Real time**: `http://localhost:8080/realtime/{sim_id}`
+- **Incidents**: `http://localhost:8080/incidents/{sim_id}`
+- **Trajectories**: `http://localhost:8080/trajectories/{sim_id}`
 
-## Système de prédiction IA
+## AI prediction system
 
-### Types de dangers détectés
+### Types of hazards detected
 
-1. **Surcharge patient** : Trop de patients par rapport à la capacité
-2. **Longues attentes** : Moyenne d’attente > 60 minutes
-3. **Sous-effectif** : Utilisation médecins > 90%
-4. **Stress système** : Indicateur global de tension
+1. **Surcharge patient**: Too many patients relative to capacity
+2. **Longues attentes**: Average wait time > 60 minutes
+3. **Sous-effectif**: Doctor utilisation > 90%
+4. **Stress système**: Overall stress indicator
 
-### Horizons temporels
+### Time horizons
+- **Immédiat** (1 hour): Real-time risk
+- **Court terme** (6 hours): Operational planning
+- **Moyen terme** (1 day): Resource planning
+- **Long terme** (1 week): Strategy
 
-- **Immédiat** (1h) : Risque en temps réel
-- **Court terme** (6h) : Planification opérationnelle
-- **Moyen terme** (1j) : Planification ressources
-- **Long terme** (1 semaine) : Stratégie
-
-### Entraînement des modèles ML
+### Training ML models
 
 ```bash
-# Entraîner tous les modèles sur l’historique
+# Train all models on historical data
 python main.py --ml --train
 
-# Entraînement direct
+# Direct training
 python src/run_ml.py --train
 
-# Lister les simulations
+# List simulations
 python src/run_ml.py --list
 ```
 
-### Obtenir des prédictions
+### Obtaining predictions
 
 ```bash
-# Prédictions pour une simulation
+# Predictions for a simulation
 python main.py --ml --predict --sim-id=1
 
-# Prédiction directe
+# Direct prediction
 python src/run_ml.py --predict 1
 ```
 
-## Pages du dashboard
+## Dashboard pages
 
-### Dashboard principal (/)
+### Main dashboard (/)
 
-- Liste des simulations disponibles
-- Statistiques et état des simulations
-- Navigation rapide
-- Sélection de simulation
+- List of available simulations
+- Simulation statistics and status
+- Quick navigation
+- Simulation selection
 
-### Analytique (/analytics/{sim_id})
+### Analytics (/analytics/{sim_id})
 
-- **Flux patients** : Suivi du nombre de patients dans le temps
-- **Utilisation médecins** : Efficacité et périodes de forte activité
-- **Modèles horaires** : Identification des pics
-- **Répartition maladies** : Graphiques en secteurs
-- **Métriques quotidiennes** : Performances par jour
-- **Performance médecins** : Statistiques individuelles
+- **Flux patients**: Track the number of patients over time
+- **Utilisation médecins**: Efficiency and periods of high activity
+- **Modèles horaires**: Identification of peaks
+- **Répartition maladies**: Pie charts
+- **Métriques quotidiennes**: Performance by day
+- **performance médecins**: Individual statistics
 
 ### Incidents (/incidents/{sim_id})
 
-- **Alertes forte attente** : Périodes d’attente excessive
-- **Incidents occupation** : Trop de médecins occupés
-- **Chronologie événements** : Épidémies, catastrophes, etc.
-- **Pires cas patients** : Plus longs temps d’attente
-- **Analyse motifs** : Fréquence par heure/type
+- **Alertes forte attente**: Periods of excessive waiting times
+- **Incidents occupation**: Too many doctors busy
+- **Chronologie évènements**: Epidemics, disasters, etc.
+- **Pires cas patients**: Longest waiting times
+- **Analyse motifs**: Frequency by hour/type
 
-### Temps réel (/realtime/{sim_id})
+### Real time (/realtime/{sim_id})
+- **Contrôles lecture**: Play/pause/stop, speed
+- **Métriques en direct**: Current patients and doctors
+- **Graphiques activité**: 2-hour sliding window
+- **Evènements récents**: Live feed
+- **Statut médecins**: Real-time assignments
+- **Alertes**: Active warnings
 
-- **Contrôles lecture** : Lecture/pause/arrêt, vitesse
-- **Métriques en direct** : Patients et médecins actuels
-- **Graphiques activité** : Fenêtre glissante 2h
-- **Événements récents** : Fil en direct
-- **Statut médecins** : Affectations en temps réel
-- **Alertes** : Avertissements actifs
+### Predictions (/predictions/{sim_id})
 
-### Prédictions (/predictions/{sim_id})
+- **Prédictions de dangers**: Overload, waiting, understaffing, etc.
+- **Scores de danger**: Current and future scores (short, medium, long term)
+- **Explications modèles**: Influential variables, critical thresholds
+- **Historique alertes prédictives**: Periods anticipated by AI
+- **Comparaison réel vs prédit**: Comparative graphs between predicted and realized
 
-- **Prédictions de dangers** : Surcharge, attente, sous-effectif, etc.
-- **Scores de danger** : Scores actuels et futurs (court, moyen, long terme)
-- **Explications modèles** : Variables influentes, seuils critiques
-- **Historique alertes prédictives** : Périodes anticipées par l’IA
-- **Comparaison réel vs prédit** : Graphiques comparatifs
+### Trajectories (/trajectories/{sim_id})
 
-### Trajectoires (/trajectories/{sim_id})
-
-- **Analyse multi-scénarios** : 50+ trajectoires alternatives du futur
-- **Intervalles de confiance** : Percentiles 25, 50, 75 des résultats
-- **Statistiques comparatives** : Moyenne, médiane, écart-type par métrique
-- **Scénarios extrêmes** : Identification des meilleurs et pires cas
-- **Distribution des résultats** : Histogrammes des valeurs finales
-- **Analyse détaillée** : Exploration individuelle des trajectoires
+- **Analyse multi-scénarios**: 50+ alternative trajectories for the future
+- **Intervalles de confiance**: 25th, 50th, and 75th percentiles of results
+- **Statistiques comparatives**: Mean, median, standard deviation per metric
+- **Scénarios extrêmes**: Identification of best and worst cases
+- **Distribution des résultats**: Histograms of final values
+- **Analyse détaillée**: Individual exploration of trajectories
 
 ## Configuration
 
-### Paramètres de simulation
+### Simulation parameters
 
 ```bash
-# Simulation de base
+# Basic simulation
 python main.py --simulation --doctors=20 --rate=15 --duration=5
 
-# Configuration avancée
+# Advanced configuration
 python main.py --simulation \
   --doctors=30 \
   --rate=25 \
   --duration=10
 ```
 
-### Options du dashboard
-
+### Dashboard options
 ```bash
-# Port et hôte personnalisés
+# Custom port and host
 python main.py --dashboard --port=8080 --host=0.0.0.0
 
-# Mode debug
+# Debug mode
 python main.py --dashboard --debug
 ```
 
-### Paramètres clés (src/config.py)
+### Key parameters (src/config.py)
 
-- `SPECIALTIES` : Spécialités médicales et caractéristiques
-- `PATIENT_ARRIVAL_RATE` : Arrivées patients de base
-- `TREATMENT_TIME_RANGES` : Durées min/max de traitement
-- `DISEASE_PROBABILITIES` : Probabilités des pathologies
-- `DANGER_THRESHOLDS` : Seuils de risque ML
+- `SPECIALTIES`: Medical specialities and characteristics
+- `PATIENT_ARRIVAL_RATE`: Basic patient arrivals
+- `TREATMENT_TIME_RANGES`: Min/max treatment times
+- `DISEASE_PROBABILITIES`: Probabilities of pathologies
+- `DANGER_THRESHOLDS`: ML risk thresholds
 
-## Schéma de base de données
+## Database schema
 
-### Tables principales
+### Main tables
 
-- **`hospital_state`** : États horodatés de l’hôpital
-- **`patient_treated`** : Historique complet des traitements
-- **`doctor_activity`** : Logs d’activité des médecins
-- **`incidents`** : Incidents détectés et alertes
-- **`ml_predictions`** : Prédictions IA et scores de confiance
+- **`hospital_state`**: Timestamped hospital states
+- **`patient_treated`**: Complete treatment history
+- **`doctor_activity`**: Doctor activity logs
+- **`incidents`**: Detected incidents and alerts
+- **`ml_predictions`**: AI predictions and confidence scores
 
-Un diagramme complet de la base de données :
+A complete diagram of the database:
 
 ![database_diagram](./img/database_diagram.svg)
 
-### Exemples de requêtes
+### Example queries
 
 ```sql
--- Résumé simulation
+-- Simulation summary
 SELECT simulation_id, COUNT(*) as patients,
        AVG(wait_time) as avg_wait
 FROM patient_treated
 GROUP BY simulation_id;
 
--- Périodes à risque
+-- Risk periods
 SELECT datetime, patients_waiting, doctors_busy
 FROM hospital_state
 WHERE patients_waiting > 20;
 ```
 
-## API REST
+## REST API
 
 ### Endpoints
 
 ```bash
-# Données simulation
+# Simulation data
 GET /api/simulation/{id}/data
 
-# Prédictions
+# Predictions
 GET /api/simulation/{id}/predictions
 
-# Entraîner modèles
+# Train models
 POST /api/ml/train
 
-# Mises à jour temps réel
+# Real-time updates
 GET /api/simulation/{id}/realtime
 
 # Incidents
 GET /api/simulation/{id}/incidents
 ```
 
-### Commandes CLI
-
+### CLI commands
 ```bash
-# Opérations simulation
+# Simulation operations
 python main.py --simulation [options]
 python main.py --dashboard [options]
 python main.py --ml [options]
 
-# Accès direct composants
+# Direct access to components
 python src/run_simulation.py [options]
 python src/run_dashboard.py [options]
 python src/run_ml.py [options]
 ```
 
-## Dépendances
+## Dependencies
 
-### Dépendances principales
+### Main dependencies
 
 - **Python 3.8+**
-- **Flask 2.3+** - Framework web
-- **NumPy 1.24+** - Calcul numérique
-- **Pandas 1.5+** - Manipulation de données
-- **SimPy 4.0+** - Simulation événements discrets
+- **Flask 2.3+** - Web framework
+- **NumPy 1.24+** - Numerical computation
+- **Pandas 1.5+** - Data manipulation
+- **SimPy 4.0+** - Discrete event simulation
 
-### Dépendances ML
+### ML dependencies
 
 - **scikit-learn 1.3+** - Machine learning
-- **joblib 1.1+** - Sauvegarde modèles
-- **matplotlib 3.7+** - Graphiques
-- **seaborn 0.12+** - Visualisation statistique
+- **joblib 1.1+** - Model saving
+- **matplotlib 3.7+** - Graphics
+- **seaborn 0.12+** - Statistical visualisation
 
 ### Frontend
 
-- **Chart.js 4.0+** - Graphiques interactifs (CDN)
+- **Chart.js 4.0+** - Interactive graphics (CDN)
 - **Bootstrap 5.1+** - UI (CDN)
-- **Font Awesome 6.0+** - Icônes (CDN)
+- **Font Awesome 6.0+** - Icons (CDN)
 
-## Poster de présentation
+## Presentation poster
 ![poster](./img/poster-ia-medical.svg)
 
 ## Licence
 
-Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
-
+The project is licensed under MIT, more information [here](./LICENSE).

@@ -10,6 +10,8 @@
 > Le projet est encore en cours de développement.
 > Pour suivre l'avancement indicatif de notre projet, voir le [planning](./PLANNING.md)
 
+## Description
+
 Un système complet de simulation hospitalière intégrant une simulation par événements discrets, une surveillance en temps réel, des prédictions par apprentissage automatique et des dashboards interactifs.
 
 ## Fonctionnalités
@@ -353,6 +355,7 @@ python src/run_ml.py [options]
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
+
 
 
 

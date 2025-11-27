@@ -1,4 +1,4 @@
-# See the english version here : [🇬🇧 English version](README.en.md)
+# See the [🇬🇧 English version](README.en.md) here :
 # ia-medical : Système de Simulation Hospitalière & Prédiction IA
 
 > ARTISHOW - Telecom Paris
@@ -353,6 +353,7 @@ python src/run_ml.py [options]
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
+
 
 
 

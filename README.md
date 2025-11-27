@@ -9,6 +9,8 @@
 > The project is still under development.
 > To follow the indicative progress of our project, see the [planning](./PLANNING.md)
 
+## Description
+
 A comprehensive hospital simulation system integrating discrete event simulation, real-time monitoring, machine learning predictions and interactive dashboards.
 
 ## Features

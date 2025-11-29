@@ -13,6 +13,9 @@
 
 A comprehensive hospital simulation system integrating discrete event simulation, real-time monitoring, machine learning predictions and interactive dashboards.
 
+## Presentation poster
+![poster](./img/poster-ia-medical.svg)
+
 ## Features
 
 ### Main simulation
@@ -341,9 +344,6 @@ python src/run_ml.py [options]
 - **Chart.js 4.0+** - Interactive graphics (CDN)
 - **Bootstrap 5.1+** - UI (CDN)
 - **Font Awesome 6.0+** - Icons (CDN)
-
-## Presentation poster
-![poster](./img/poster-ia-medical.svg)
 
 ## Licence
 

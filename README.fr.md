@@ -14,6 +14,9 @@
 
 Un système complet de simulation hospitalière intégrant une simulation par événements discrets, une surveillance en temps réel, des prédictions par apprentissage automatique et des dashboards interactifs.
 
+## Poster de présentation
+![poster](./img/poster-ia-medical.svg)
+
 ## Fonctionnalités
 
 ### Simulation principale
@@ -349,12 +352,10 @@ python src/run_ml.py [options]
 - **Bootstrap 5.1+** - UI (CDN)
 - **Font Awesome 6.0+** - Icônes (CDN)
 
-## Poster de présentation
-![poster](./img/poster-ia-medical.svg)
-
 ## Licence
 
 Le projet est sous license MIT, plus d'informations [ici](./LICENSE).
+
 
 
 
